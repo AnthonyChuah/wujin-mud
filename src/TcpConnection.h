@@ -1,8 +1,12 @@
 #pragma once
 
+#include "CommandBuffer.h"
+
 #include <boost/asio.hpp>
 #include <memory>
 #include <string>
+
+class Character;
 
 class TcpConnection
 {
@@ -16,11 +20,37 @@ public:
         return _socket;
     }
 
-    void Start();
+    void AttachCharacter(Character* character)
+    {
+        _character = character;
+    }
 
+    void DetachCharacter()
+    {
+        _character = nullptr;
+    }
+
+    void StartWrite();
+    void StartRead();
+
+    void Stop();
+
+    std::string& GetOutputBuffer()
+    {
+        return _message;
+    }
     size_t GetId() const
     {
         return _id;
+    }
+    std::string GetNextCommand();
+    Character* GetCharacter()
+    {
+        return _character;
+    }
+    bool UserInGame() const
+    {
+        return _character != nullptr;
     }
 
     friend bool operator==(const TcpConnection& left, const TcpConnection& right)
@@ -33,11 +63,18 @@ public:
     }
 
 private:
-    void HandleWrite(const boost::system::error_code& error, size_t bytes);
+    void HandleWrite(const boost::system::error_code& error);
+    void HandleRead(const boost::system::error_code& error);
+    void CheckTimeout();
 
     size_t _id;
     boost::asio::ip::tcp::socket _socket;
+    boost::asio::deadline_timer _timeout;
+    boost::asio::streambuf _inputBuffer;
     std::string _message;
+    CommandBuffer _commands;
+    Character* _character = nullptr;
+    bool _connected = true;
 };
 
 namespace std

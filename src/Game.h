@@ -3,16 +3,15 @@
 #include "Character.h"
 #include "World.h"
 
+#include <unordered_map>
+
 class CommandBuffer;
-class ConsoleHandler;
+class TcpConnection;
 
 /**
  * The smallest unit of time in the game is the Cycle (50 milliseconds)
  * Events that require interaction with the world / other players must happen
  * at a Cycle.
- *
- * Validation or helpfiles or prompts can happen at the user-input-handler level,
- * so they may happen off-Cycle.
  */
 class Game
 {
@@ -21,20 +20,19 @@ public:
     static constexpr size_t CYCLES_PER_ROUND = 10;
     static constexpr size_t ROUNDS_PER_TICK = 60;
 
-    Game(CommandBuffer& buffer);
+    Game();
 
-    void LaunchAllThreads();
-    void Run();
-    void LaunchConsole();
+    void MainLoop();
     void Shutdown();
+
+    void AddNewConnection(TcpConnection* connection);
+
 private:
     void ExecuteGameCycle();
+    void HandleCharacterLogin(TcpConnection* connection, const std::string& cmd);
 
-    // Eventually decouple into Player-oriented output streams and command buffers
-    CommandBuffer& _buffer;
-    ConsoleHandler _console;
-    std::ostream& _outstream;
+    size_t _connectionId = 0;
     World _world;
-    Character _character;
+    std::unordered_map<size_t, TcpConnection*> _connections;
     bool _up = true;
 };

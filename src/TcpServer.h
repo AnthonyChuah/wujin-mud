@@ -6,10 +6,12 @@
 #include <memory>
 #include <unordered_set>
 
+class Game;
+
 class TcpServer
 {
 public:
-    TcpServer(unsigned port);
+    TcpServer(unsigned port, Game* game);
 
     void Run();
 private:
@@ -20,4 +22,5 @@ private:
     boost::asio::io_service _ioService;
     boost::asio::ip::tcp::acceptor _acceptor;
     std::unordered_set<std::unique_ptr<TcpConnection>> _connections;
+    Game* _game;
 };

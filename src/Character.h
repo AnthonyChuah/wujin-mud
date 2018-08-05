@@ -5,15 +5,19 @@
 #include "World.h"
 
 #include <cstdint>
-#include <ostream>
+#include <string>
 #include <vector>
 
 class Character : public Creature
 {
 public:
-    Character(std::ostream& outstream, World& world);
+    Character(std::string& output, World& world, const std::string& name);
     void ExecuteCommand(const std::string& command);
 
+    const std::string& GetName() const
+    {
+        return _name;
+    }
 private:
     void DoAdmin(const std::vector<std::string>& tokens);
 
@@ -28,9 +32,10 @@ private:
     void DoCombatSkill(const std::vector<std::string>& tokens);
     void DoCombatSpell(const std::vector<std::string>& tokens);
 
-    std::ostream& _outstream;
+    std::string& _output;
     World& _world;
 
+    const std::string _name;
     Items::EquipmentSet _equipment;
     Geo::Coordinates _location;
     uint32_t _speed = 4;

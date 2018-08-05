@@ -1,9 +1,11 @@
+#include "Game.h"
 #include "TcpServer.h"
 
 #include <functional>
 
-TcpServer::TcpServer(unsigned port)
+TcpServer::TcpServer(unsigned port, Game* game)
     : _acceptor(_ioService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
+    , _game(game)
 {
     StartAccept();
 }
@@ -27,7 +29,9 @@ void TcpServer::HandleAccept(TcpConnection* connection, const boost::system::err
 {
     if (!error)
     {
-        connection->Start();
+        connection->StartRead();
+        connection->StartWrite();
+        _game->AddNewConnection(connection);
     }
     StartAccept();
 }

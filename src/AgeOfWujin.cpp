@@ -16,8 +16,11 @@ int main(int argc, char** argv)
 
     unsigned port = atoi(argv[1]);
 
-    TcpServer server{port};
+    Game game;
+    TcpServer server{port, &game};
+    std::thread gameThread(&Game::MainLoop, &game);
     server.Run();
+    gameThread.join();
 
     return 0;
 }

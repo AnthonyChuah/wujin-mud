@@ -16,8 +16,8 @@ bool HasOnlyDigits(const std::string& str)
                        });
 }
 
-Character::Character(std::ostream& outstream, World& world)
-    : _outstream(outstream), _world(world)
+Character::Character(std::string& output, World& world, const std::string& name)
+    : _output(output), _world(world), _name(name)
 {}
 
 void Character::ExecuteCommand(const std::string& command)
@@ -65,7 +65,7 @@ void Character::DoAdmin(const std::vector<std::string>& tokens)
     if (tokens[0] == "quit")
     {
         _world.RemoveCharacter(this);
-        _outstream << "Good-bye, see you again soon in the Age of Wujin!\n";
+        _output.append("Good-bye, see you again soon in the Age of Wujin!\n");
     }
 }
 
@@ -98,14 +98,17 @@ void Character::DoMove(const std::vector<std::string>& tokens)
             const std::string& first = tokens[1];
             const std::string& second = tokens[2];
             if (!Move(first, second))
-                _outstream << "Unable to move to coordinates " << first
-                           << ", " << second << "\n";
+            {
+                _output.append("Unable to move to coordinates ");
+                _output.append(first).append(", ").append(second).append("\n");
+            }
         }
         else
-            _outstream << "You must specify two arguments to move, "
-                "i.e. move [X-coord] [Y-coord], both must be numbers representing "
-                "a location within reach in one step, where your step size is "
-                       << GetSpeed() << "\n";
+        {
+            _output.append("You must specify X and Y coordinates to move, e.g. `move 42 24`.\n");
+            _output.append("The destination must be within ").append(std::to_string(GetSpeed()));
+            _output.append(" units (i.e. your speed)\n");
+        }
         break;
     }
     }
