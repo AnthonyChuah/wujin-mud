@@ -38,6 +38,6 @@ private:
     const std::string _name;
     Items::EquipmentSet _equipment;
     Geo::Coordinates _location;
-    uint32_t _speed = 4;
+    uint32_t _speed = 4; // expand this out into all character attributes and skills
     bool _inCombat = false;
 };

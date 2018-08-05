@@ -2,6 +2,7 @@
 #include "TcpServer.h"
 
 #include <functional>
+#include <iostream>
 
 TcpServer::TcpServer(unsigned port, Game* game)
     : _acceptor(_ioService, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
@@ -15,11 +16,23 @@ void TcpServer::Run()
     _ioService.run();
 }
 
+bool TcpServer::DestroyConnection(size_t id)
+{
+    if (!_connections.erase(id))
+    {
+        std::cout << "Attempted to erase non-existent connection ID " << id << "\n";
+        return false;
+    }
+    return true;
+}
+
 void TcpServer::StartAccept()
 {
-    auto pairit = _connections.emplace(TcpConnection::Make(_acceptor.get_io_service(),
-                                                           _numConnected++));
-    TcpConnection* connection = pairit.first->get();
+    auto pairit = _connections.emplace(
+        std::make_pair(_numConnected, TcpConnection::Make(_acceptor.get_io_service(),
+                                                          _numConnected)));
+    ++_numConnected;
+    TcpConnection* connection = pairit.first->second.get();
     _acceptor.async_accept(connection->GetSocket(),
                            std::bind(&TcpServer::HandleAccept, this, connection,
                                      std::placeholders::_1));

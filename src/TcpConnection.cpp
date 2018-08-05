@@ -5,7 +5,7 @@
 
 TcpConnection::TcpConnection(boost::asio::io_service& ioService, size_t id)
     : _id(id), _socket(ioService), _timeout(ioService)
-    , _message("Welcome to Age of Wujin MUD!\n")
+    , _message("Welcome to Age of Wujin MUD! What is the name of our hero?\n\nName:")
 {
     _timeout.async_wait(std::bind(&TcpConnection::CheckTimeout, this));
 }

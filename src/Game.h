@@ -7,6 +7,7 @@
 
 class CommandBuffer;
 class TcpConnection;
+class TcpServer;
 
 /**
  * The smallest unit of time in the game is the Cycle (50 milliseconds)
@@ -31,8 +32,10 @@ private:
     void ExecuteGameCycle();
     void HandleCharacterLogin(TcpConnection* connection, const std::string& cmd);
 
-    size_t _connectionId = 0;
     World _world;
+    TcpServer* _server;
     std::unordered_map<size_t, TcpConnection*> _connections;
+    std::unordered_map<size_t, Character> _characters;
+    std::vector<size_t> _disconnects;
     bool _up = true;
 };

@@ -73,3 +73,8 @@ An illustrative example of a passive combat ability is the passive melee attacks
 Spells aren't mechanically any different from skills, but they are separated from skills just for game-flavour reasons.
 
 Some skills and spells can be used outside of combat.
+
+## Acknowledgements
+
+* Boost library: https://github.com/boostorg
+* RapidJSON library: https://github.com/Tencent/rapidjson
