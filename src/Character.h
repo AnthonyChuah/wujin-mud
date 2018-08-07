@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+struct CharacterTemplate;
+
 class Character : public Creature
 {
 public:

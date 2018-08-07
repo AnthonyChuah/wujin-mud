@@ -1,5 +1,6 @@
 #include "Actions.h"
 #include "Character.h"
+#include "CharacterFileLoader.h"
 #include "CommandParser.h"
 
 #include <algorithm>

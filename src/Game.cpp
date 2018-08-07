@@ -4,9 +4,23 @@
 #include "TcpConnection.h"
 #include "TcpServer.h"
 
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <iostream>
 #include <thread>
+
+namespace
+{
+
+void ToProperCase(std::string& str)
+{
+    str[0] = toupper(str[0]);
+    for (size_t i = 1; i < str.length(); ++i)
+        str[i] = tolower(str[i]);
+}
+
+}
 
 Game::Game() : _world("world.dat")
 {
@@ -69,6 +83,8 @@ void Game::ExecuteGameCycle()
         command = con->GetNextCommand();
         if (con->UserInGame())
             con->GetCharacter()->ExecuteCommand(command);
+        else if (con->UserTryingLogin())
+            HandleCharacterPassword(con, command);
         else
             HandleCharacterLogin(con, command);
         con->StartWrite();
@@ -83,17 +99,60 @@ void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cm
     // connection->GetOutputBuffer().append(cmd);
     // connection->StartWrite();
 
-    CharacterFileLoader loader(cmd.c_str());
+    // cmd contains a string which is the name of the character he wants to login as
+    // Validate name (all letters no spaces)
+    auto it = std::find_if(cmd.begin(), cmd.end(), [](char c)
+                           {
+                               return !isalpha(c);
+                           });
+    if (it != cmd.end())
+    {
+        std::string& output = connection->GetOutputBuffer();
+        output.append("Invalid login name. Only letters allowed, no spaces. Try again.");
+        connection->StartWrite();
+    }
+
+    std::string name = cmd;
+    ToProperCase(name);
+
+    // Then, ask for password and set user state to "trying login"
+    connection->SetUserTryingLogin();
+    connection->SetLogin(name);
+    connection->GetOutputBuffer().append("Trying to login to ").append(name);
+    connection->GetOutputBuffer().append(". Password:");
+    connection->StartWrite();
+}
+
+void Game::HandleCharacterPassword(TcpConnection* connection, const std::string& cmd)
+{
+    const std::string& name = connection->GetLogin();
+    bool reconnect = false;
+    if (_nameToId.find(name) != _nameToId.end())
+    {
+        connection->GetOutputBuffer().append("Character is already logged on. Reconnecting.\n");
+        _nameToId.erase(name); // insert below
+        reconnect = true;
+    }
+
+    CharacterFileLoader loader(connection->GetLogin().c_str(), cmd);
     if (loader)
     {
-        Character character(connection->GetOutputBuffer(), _world, loader.GetName());
-        if (loader.LoadCharacterData(character))
+        CharacterTemplate templait;
+        if (loader.LoadCharacterData(templait))
         {
-            // move character into Game's unordered_map of Characters
+            if (!reconnect)
+            {
+                _characters.emplace(std::piecewise_construct,
+                                    std::forward_as_tuple(connection->GetId()),
+                                    std::forward_as_tuple(connection->GetOutputBuffer(),
+                                                          _world, name));
+                _nameToId.emplace(std::make_pair(name, connection->GetId()));
+            }
         }
         else
         {
             std::cout << "Failed to load character file " << loader.GetName() << "\n";
         }
     }
+    connection->StartWrite();
 }

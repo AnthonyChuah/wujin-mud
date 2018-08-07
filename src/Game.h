@@ -31,11 +31,13 @@ public:
 private:
     void ExecuteGameCycle();
     void HandleCharacterLogin(TcpConnection* connection, const std::string& cmd);
+    void HandleCharacterPassword(TcpConnection* connection, const std::string& cmd);
 
     World _world;
     TcpServer* _server;
     std::unordered_map<size_t, TcpConnection*> _connections;
     std::unordered_map<size_t, Character> _characters;
+    std::unordered_map<std::string, size_t> _nameToId;
     std::vector<size_t> _disconnects;
     bool _up = true;
 };

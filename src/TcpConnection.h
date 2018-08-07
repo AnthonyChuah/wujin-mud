@@ -52,6 +52,22 @@ public:
     {
         return _character != nullptr;
     }
+    bool UserTryingLogin() const
+    {
+        return _tryLogin;
+    }
+    void SetUserTryingLogin()
+    {
+        _tryLogin = true;
+    }
+    const std::string& GetLogin() const
+    {
+        return _login;
+    }
+    void SetLogin(const std::string& login)
+    {
+        _login = login;
+    }
 
     friend bool operator==(const TcpConnection& left, const TcpConnection& right)
     {
@@ -72,9 +88,11 @@ private:
     boost::asio::deadline_timer _timeout;
     boost::asio::streambuf _inputBuffer;
     std::string _message;
+    std::string _login;
     CommandBuffer _commands;
     Character* _character = nullptr;
     bool _connected = true;
+    bool _tryLogin = false;
 };
 
 namespace std
