@@ -7,13 +7,15 @@
 #include <string>
 
 class Character;
+class TcpServer;
 
 class TcpConnection
 {
 public:
-    static std::unique_ptr<TcpConnection> Make(boost::asio::io_service& ioService, size_t id);
+    static std::unique_ptr<TcpConnection> Make(boost::asio::io_service& ioService, size_t id, TcpServer* server);
 
-    TcpConnection(boost::asio::io_service& ioService, size_t id);
+    TcpConnection(boost::asio::io_service& ioService, size_t id, TcpServer* server);
+    ~TcpConnection();
 
     boost::asio::ip::tcp::socket& GetSocket()
     {
@@ -43,6 +45,16 @@ public:
     {
         return _id;
     }
+    void SetId(size_t id)
+    {
+        _id = id;
+    }
+
+    bool HasNextCommand() const
+    {
+        return _commands.GetSize() > 0;
+    }
+
     std::string GetNextCommand();
     Character* GetCharacter()
     {
@@ -90,21 +102,8 @@ private:
     std::string _message;
     std::string _login;
     CommandBuffer _commands;
+    TcpServer* _server;
     Character* _character = nullptr;
     bool _connected = true;
     bool _tryLogin = false;
 };
-
-namespace std
-{
-
-template <>
-struct hash<TcpConnection>
-{
-    size_t operator()(const TcpConnection& key) const
-    {
-        return key.GetId();
-    }
-};
-
-} // namespace std

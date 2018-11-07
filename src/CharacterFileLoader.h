@@ -3,17 +3,14 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 
-struct CharacterTemplate
-{
-};
-
 class CharacterFileLoader
 {
 public:
+    friend class Character;
+
     CharacterFileLoader(const char* name, const std::string& pwd);
 
-    // Injects data into CharacterTemplate
-    bool LoadCharacterData(CharacterTemplate& templait);
+    void PopulateCharacterData();
 
     operator bool() const
     {
@@ -24,6 +21,8 @@ public:
         return _name;
     }
 private:
+    bool CheckDomValid() const;
     std::string _name;
     rapidjson::Document _dom;
+    Character _character;
 };

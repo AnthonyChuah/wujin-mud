@@ -4,9 +4,6 @@
 #include <string>
 #include <utility>
 
-namespace Items
-{
-
 enum class EquipSlot : uint8_t
 {
     INVALID = 0,
@@ -92,5 +89,3 @@ private:
     std::pair<bool, Armour> _feet;
     std::pair<bool, Mount> _mount;
 };
-
-} // namespace Items

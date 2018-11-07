@@ -1,26 +1,34 @@
 #include "TcpConnection.h"
+#include "TcpServer.h"
 
 #include <cstdio>
 #include <functional>
 
-TcpConnection::TcpConnection(boost::asio::io_service& ioService, size_t id)
+TcpConnection::TcpConnection(boost::asio::io_service& ioService, size_t id, TcpServer* server)
     : _id(id), _socket(ioService), _timeout(ioService)
     , _message("Welcome to Age of Wujin MUD! What is the name of our hero?\n\nName:")
+    , _server(server)
 {
     _timeout.async_wait(std::bind(&TcpConnection::CheckTimeout, this));
 }
 
-std::unique_ptr<TcpConnection> TcpConnection::Make(boost::asio::io_service& ioService,
-                                                   size_t id)
+TcpConnection::~TcpConnection()
 {
-    return std::make_unique<TcpConnection>(ioService, id);
+    printf("~TcpConnection()\n");
+    _socket.close();
+    _timeout.cancel();
+    _connected = false;
+}
+
+std::unique_ptr<TcpConnection> TcpConnection::Make(boost::asio::io_service& ioService,
+                                                   size_t id, TcpServer* server)
+{
+    return std::make_unique<TcpConnection>(ioService, id, server);
 }
 
 void TcpConnection::Stop()
 {
-    _message = "Your connection has timed out. Please connect again.\n";
     _connected = false;
-    StartWrite();
 }
 
 std::string TcpConnection::GetNextCommand()
@@ -30,6 +38,9 @@ std::string TcpConnection::GetNextCommand()
 
 void TcpConnection::StartWrite()
 {
+    if (_message.empty())
+        return;
+
     _message.append("\n");
     boost::asio::async_write(_socket, boost::asio::buffer(_message),
                              std::bind(&TcpConnection::HandleWrite, this,
@@ -66,6 +77,12 @@ void TcpConnection::HandleRead(const boost::system::error_code& error)
     if (!_connected)
         return;
 
+    if (error == boost::asio::error::eof ||
+        error == boost::asio::error::connection_reset)
+    {
+        _server->DestroyConnection(_id);
+    }
+
     if (!error)
     {
         std::string line;
@@ -85,7 +102,7 @@ void TcpConnection::HandleRead(const boost::system::error_code& error)
     }
     else
     {
-        printf("boost::asio::async_read returned error %s reading socket",
+        printf("boost::asio::async_read returned error %s reading socket\n",
                error.message().c_str());
     }
 }

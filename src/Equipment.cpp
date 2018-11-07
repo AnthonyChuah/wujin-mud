@@ -1,8 +1,5 @@
 #include "Equipment.h"
 
-namespace Items
-{
-
 void EquipmentSet::CalculateBonuses()
 {
     uint32_t weight = 0;
@@ -47,5 +44,3 @@ void EquipmentSet::CalculateBonuses()
 
     _bonuses = EquipmentBonuses{damage, deflect, reduction, speed, weight, reach};
 }
-
-} // namespace Items

@@ -40,7 +40,7 @@ void Game::MainLoop()
         auto end = std::chrono::time_point_cast<std::chrono::microseconds>
             (std::chrono::system_clock::now());
         std::chrono::microseconds elapsed = end - start;
-        std::chrono::microseconds wait{CYCLE_US - elapsed.count()};
+        std::chrono::microseconds wait{CYCLE_USEC - elapsed.count()};
         std::this_thread::sleep_for(wait);
     }
 }
@@ -66,6 +66,15 @@ void Game::ExecuteGameCycle()
     {
         std::cout << "Clean up a dead user connection of ID " << id << "\n";
         _connections.erase(id);
+
+        auto iter = _characters.find(id);
+        if (iter != _characters.end())
+        {
+            std::string nameToDelete = _characters.at(id).GetName();
+            _characters.erase(id);
+            _nameToId.erase(nameToDelete);
+        }
+
         _server->DestroyConnection(id);
     }
     _disconnects.clear();
@@ -80,14 +89,17 @@ void Game::ExecuteGameCycle()
             continue;
         }
 
+        if (!con->HasNextCommand())
+            continue;
+
         command = con->GetNextCommand();
+
         if (con->UserInGame())
             con->GetCharacter()->ExecuteCommand(command);
         else if (con->UserTryingLogin())
             HandleCharacterPassword(con, command);
         else
             HandleCharacterLogin(con, command);
-        con->StartWrite();
     }
 }
 
@@ -101,24 +113,27 @@ void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cm
 
     // cmd contains a string which is the name of the character he wants to login as
     // Validate name (all letters no spaces)
-    auto it = std::find_if(cmd.begin(), cmd.end(), [](char c)
+    const std::string token = cmd.substr(0, cmd.find_first_of("\n\r\t"));
+    auto it = std::find_if(token.begin(), token.end(), [](char c)
                            {
                                return !isalpha(c);
                            });
-    if (it != cmd.end())
+    if (it != token.end())
     {
         std::string& output = connection->GetOutputBuffer();
-        output.append("Invalid login name. Only letters allowed, no spaces. Try again.");
+        output.append("Invalid login name. Only letters allowed, no spaces. Try again.\n");
         connection->StartWrite();
+        return;
     }
 
-    std::string name = cmd;
+    std::string name = token;
     ToProperCase(name);
 
     // Then, ask for password and set user state to "trying login"
     connection->SetUserTryingLogin();
     connection->SetLogin(name);
-    connection->GetOutputBuffer().append("Trying to login to ").append(name);
+    connection->GetOutputBuffer().append("Trying to login as player character ");
+    connection->GetOutputBuffer().append(name);
     connection->GetOutputBuffer().append(". Password:");
     connection->StartWrite();
 }
@@ -126,33 +141,50 @@ void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cm
 void Game::HandleCharacterPassword(TcpConnection* connection, const std::string& cmd)
 {
     const std::string& name = connection->GetLogin();
-    bool reconnect = false;
-    if (_nameToId.find(name) != _nameToId.end())
+    const std::string pwd = cmd.substr(0, cmd.find_first_of("\n\r\t"));
+
+    auto iter = _nameToId.find(name);
+    if (iter != _nameToId.end())
     {
+        size_t oldId = iter->second;
+        Character existing = _characters.find(oldId)->second;
+        auto pairiter = _characters.emplace(std::make_pair(connection->GetId(), std::move(existing)));
+        _nameToId.emplace(std::make_pair(name, connection->GetId()));
+
+        _disconnects.push_back(oldId);
+
         connection->GetOutputBuffer().append("Character is already logged on. Reconnecting.\n");
-        _nameToId.erase(name); // insert below
-        reconnect = true;
+        connection->StartWrite();
+        connection->AttachCharacter(&pairiter.first->second);
+        return;
     }
 
-    CharacterFileLoader loader(connection->GetLogin().c_str(), cmd);
+    CharacterFileLoader loader(name.c_str(), pwd);
     if (loader)
     {
-        CharacterTemplate templait;
-        if (loader.LoadCharacterData(templait))
-        {
-            if (!reconnect)
-            {
-                _characters.emplace(std::piecewise_construct,
-                                    std::forward_as_tuple(connection->GetId()),
-                                    std::forward_as_tuple(connection->GetOutputBuffer(),
-                                                          _world, name));
-                _nameToId.emplace(std::make_pair(name, connection->GetId()));
-            }
-        }
-        else
-        {
-            std::cout << "Failed to load character file " << loader.GetName() << "\n";
-        }
+        auto pairiter = _characters.emplace(std::piecewise_construct,
+                                            std::forward_as_tuple(connection->GetId()),
+                                            std::forward_as_tuple(&connection->GetOutputBuffer(),
+                                                                  &_world, loader));
+        _nameToId.emplace(std::make_pair(name, connection->GetId()));
+
+        std::cout << "Loaded Character whose ID is " << connection->GetId() << "\n";
+
+        connection->GetOutputBuffer().append("Welcome to AgeOfWujin MUD, ");
+        connection->GetOutputBuffer().append(name);
+        connection->GetOutputBuffer().append("!");
+        connection->StartWrite();
+        connection->AttachCharacter(&pairiter.first->second);
     }
-    connection->StartWrite();
+    else
+    {
+        std::cout << "Failed to load character file " << loader.GetName() << "\n";
+        std::cout << "Attempt to do character creation!\n";
+        connection->GetOutputBuffer().append("Character does not exist. Character creation not yet implemented.\n");
+        connection->GetOutputBuffer().append("Please reconnect and try again.");
+        connection->StartWrite();
+
+        _disconnects.push_back(connection->GetId());
+        // Implement later
+    }
 }

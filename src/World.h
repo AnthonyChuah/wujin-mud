@@ -4,36 +4,34 @@
 #include <string>
 #include <unordered_map>
 
-namespace Geo
-{
-
-// Although 32-bits, should never go bigger than 24-bit int
 struct Coordinates
 {
-    Coordinates() = default;
-
-    int32_t x;
-    int32_t y;
-
-    friend Coordinates operator+(Coordinates left, const Coordinates& right)
-    {
-        Coordinates result{left.x + right.x, left.y + right.y};
-        return result;
-    }
-    friend Coordinates operator-(Coordinates left, const Coordinates& right)
-    {
-        Coordinates result{left.x - right.x, left.y - right.y};
-        return result;
-    }
+    uint8_t x;
+    uint8_t y;
 
     // Gets the max of horizontal and vertical distances
-    friend int32_t GetDistance(Coordinates from, Coordinates to);
+    friend uint8_t GetDistance(Coordinates from, Coordinates to);
 };
 
-struct MajorCoordinates
+namespace std
 {
-    int32_t X;
-    int32_t Y;
+
+template <>
+struct hash<Coordinates>
+{
+    size_t operator()(const Coordinates& coord) const
+    {
+        return coord.x * 256 + coord.y;
+    }
+};
+
+}
+
+// World is divided into 256 by 256 zones, each zone has 256 by 256 locations
+struct Location
+{
+    Coordinates major;
+    Coordinates minor;
 };
 
 enum class Direction : uint8_t
@@ -55,25 +53,7 @@ struct Zone
     std::string description;
 };
 
-MajorCoordinates GetMajorCoordinates(Coordinates coordinates);
-
 Direction GetDirection(const std::string& direction);
-
-} // namespace Geo
-
-namespace std
-{
-
-template <>
-struct hash<Geo::MajorCoordinates>
-{
-    size_t operator()(const Geo::MajorCoordinates& key) const
-    {
-        return *reinterpret_cast<const uint64_t*>(&key);
-    }
-};
-
-} // namespace std
 
 class Character;
 
@@ -87,8 +67,8 @@ public:
 
     void RemoveCharacter(Character* character);
 private:
-    std::unordered_map<Geo::MajorCoordinates, Geo::Zone> _zones;
-    Geo::Zone _unknownZone = {"Unknown Zone",
-                              "You appear to have wandered into a glitchy unknown zone. "
-                              "Report a bug! Also get back to civilization."};
+    std::unordered_map<Coordinates, Zone> _zones;
+    Zone _unknownZone = {"Unknown Zone",
+                         "You appear to have wandered into a glitchy unknown zone. "
+                         "Report a bug! Also get back to civilization."};
 };
