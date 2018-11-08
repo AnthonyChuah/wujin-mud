@@ -18,6 +18,7 @@ int main(int argc, char** argv)
 
     Game game;
     TcpServer server{port, &game};
+    game.AttachServer(&server);
     std::thread gameThread(&Game::MainLoop, &game);
     server.Run();
     gameThread.join();

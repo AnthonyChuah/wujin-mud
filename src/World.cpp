@@ -3,20 +3,11 @@
 #include <cmath>
 #include <fstream>
 
-namespace Geo
+uint8_t GetDistance(Coordinates from, Coordinates to)
 {
-
-int32_t GetDistance(Coordinates from, Coordinates to)
-{
-    int32_t xdiff = std::abs(to.x - from.x);
-    int32_t ydiff = std::abs(to.y - from.y);
+    uint8_t xdiff = std::abs(to.x - from.x);
+    uint8_t ydiff = std::abs(to.y - from.y);
     return xdiff > ydiff ? xdiff : ydiff;
-}
-
-MajorCoordinates GetMajorCoordinates(Coordinates coordinates)
-{
-    MajorCoordinates major{coordinates.x / 100, coordinates.y / 100};
-    return major;
 }
 
 Direction GetDirection(const std::string& direction)
@@ -39,8 +30,6 @@ Direction GetDirection(const std::string& direction)
         return Direction::SOUTHWEST;
     return Direction::INVALID;
 }
-
-} // namespace Geo
 
 World::World(const std::string& file)
 {

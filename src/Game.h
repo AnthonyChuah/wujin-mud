@@ -17,7 +17,7 @@ class TcpServer;
 class Game
 {
 public:
-    static constexpr size_t CYCLE_US = 50000; // microseconds
+    static constexpr size_t CYCLE_USEC = 50000; // microseconds
     static constexpr size_t CYCLES_PER_ROUND = 10;
     static constexpr size_t ROUNDS_PER_TICK = 60;
 
@@ -26,6 +26,10 @@ public:
     void MainLoop();
     void Shutdown();
 
+    void AttachServer(TcpServer* server)
+    {
+        _server = server;
+    }
     void AddNewConnection(TcpConnection* connection);
 
 private:

@@ -30,7 +30,7 @@ void TcpServer::StartAccept()
 {
     auto pairit = _connections.emplace(
         std::make_pair(_numConnected, TcpConnection::Make(_acceptor.get_io_service(),
-                                                          _numConnected)));
+                                                          _numConnected, this)));
     ++_numConnected;
     TcpConnection* connection = pairit.first->second.get();
     _acceptor.async_accept(connection->GetSocket(),

@@ -1,0 +1,11 @@
+{
+    "name": "Test",
+    "password": "foobar",
+    "location":
+    {
+	"world_x": 196,
+	"world_y": 128,
+	"zone_x": 0,
+	"zone_y": 0
+    }
+}
