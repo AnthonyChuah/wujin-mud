@@ -19,7 +19,7 @@ void ConsoleHandler::Run()
         WriteToStdOut(_prompt);
         std::getline(std::cin, _command);
 
-        if (!Actions::PreProcessCommand(_command, this))
+        if (!PreProcessCommand(_command, this))
         {
             if (!_buffer.AddCommand(_command.c_str()))
             {

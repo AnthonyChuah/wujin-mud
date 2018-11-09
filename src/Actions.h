@@ -19,14 +19,11 @@
 
 class ConsoleHandler;
 
-namespace Actions
-{
-
 enum class ActionType : uint8_t
 {
     INVALID = 0,
     ADMIN = 1,
-    MOVEMENT = 2,
+    DIRECTION = 2,
     ACTIVITY = 3,
     SKILL = 4,
     SPELL = 5,
@@ -40,5 +37,3 @@ ActionType GetActionType(const std::string& command, bool inCombat);
 bool PreProcessCommand(const std::string& command, ConsoleHandler* console);
 
 void GetHelpFile(const std::vector<std::string>& tokens, ConsoleHandler* console);
-
-} // namespace Actions

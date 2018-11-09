@@ -79,6 +79,9 @@ void Game::ExecuteGameCycle()
     }
     _disconnects.clear();
 
+    // Make the world trigger any non-player-initiated events
+    // e.g. damage over time, debuff fading
+
     std::string command;
     for (auto& c : _connections)
     {
@@ -93,6 +96,10 @@ void Game::ExecuteGameCycle()
             continue;
 
         command = con->GetNextCommand();
+        command = command.substr(0, command.find_first_of("\n\r"));
+
+        if (command.empty())
+            return;
 
         if (con->UserInGame())
             con->GetCharacter()->ExecuteCommand(command);
@@ -101,32 +108,31 @@ void Game::ExecuteGameCycle()
         else
             HandleCharacterLogin(con, command);
     }
+
+    for (auto& c : _connections)
+        c.second->StartWrite(); // Flush all buffered messages to all connected clients
 }
 
 void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cmd)
 {
-    if (cmd.empty())
-        return;
     // connection->GetOutputBuffer() = "Feature coming soon! You attempted to LOGIN as ";
     // connection->GetOutputBuffer().append(cmd);
     // connection->StartWrite();
 
     // cmd contains a string which is the name of the character he wants to login as
     // Validate name (all letters no spaces)
-    const std::string token = cmd.substr(0, cmd.find_first_of("\n\r\t"));
-    auto it = std::find_if(token.begin(), token.end(), [](char c)
+    auto it = std::find_if(cmd.begin(), cmd.end(), [](char c)
                            {
                                return !isalpha(c);
                            });
-    if (it != token.end())
+    if (it != cmd.end())
     {
         std::string& output = connection->GetOutputBuffer();
         output.append("Invalid login name. Only letters allowed, no spaces. Try again.\n");
-        connection->StartWrite();
         return;
     }
 
-    std::string name = token;
+    std::string name = cmd;
     ToProperCase(name);
 
     // Then, ask for password and set user state to "trying login"
@@ -135,13 +141,11 @@ void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cm
     connection->GetOutputBuffer().append("Trying to login as player character ");
     connection->GetOutputBuffer().append(name);
     connection->GetOutputBuffer().append(". Password:");
-    connection->StartWrite();
 }
 
 void Game::HandleCharacterPassword(TcpConnection* connection, const std::string& cmd)
 {
     const std::string& name = connection->GetLogin();
-    const std::string pwd = cmd.substr(0, cmd.find_first_of("\n\r\t"));
 
     auto iter = _nameToId.find(name);
     if (iter != _nameToId.end())
@@ -154,12 +158,11 @@ void Game::HandleCharacterPassword(TcpConnection* connection, const std::string&
         _disconnects.push_back(oldId);
 
         connection->GetOutputBuffer().append("Character is already logged on. Reconnecting.\n");
-        connection->StartWrite();
         connection->AttachCharacter(&pairiter.first->second);
         return;
     }
 
-    CharacterFileLoader loader(name.c_str(), pwd);
+    CharacterFileLoader loader(name.c_str(), cmd);
     if (loader)
     {
         auto pairiter = _characters.emplace(std::piecewise_construct,
@@ -173,7 +176,6 @@ void Game::HandleCharacterPassword(TcpConnection* connection, const std::string&
         connection->GetOutputBuffer().append("Welcome to AgeOfWujin MUD, ");
         connection->GetOutputBuffer().append(name);
         connection->GetOutputBuffer().append("!");
-        connection->StartWrite();
         connection->AttachCharacter(&pairiter.first->second);
     }
     else
@@ -182,7 +184,6 @@ void Game::HandleCharacterPassword(TcpConnection* connection, const std::string&
         std::cout << "Attempt to do character creation!\n";
         connection->GetOutputBuffer().append("Character does not exist. Character creation not yet implemented.\n");
         connection->GetOutputBuffer().append("Please reconnect and try again.");
-        connection->StartWrite();
 
         _disconnects.push_back(connection->GetId());
         // Implement later
