@@ -10,8 +10,6 @@ public:
 
     CharacterFileLoader(const char* name, const std::string& pwd);
 
-    void PopulateCharacterData();
-
     operator bool() const
     {
         return !_name.empty();
@@ -21,8 +19,9 @@ public:
         return _name;
     }
 private:
-    bool CheckDomValid() const;
+    bool CheckDomValid(const rapidjson::Document& dom) const;
+    void PopulateCharacterData(const rapidjson::Document& dom);
+
     std::string _name;
-    rapidjson::Document _dom;
     Character _character;
 };

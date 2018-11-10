@@ -2,9 +2,6 @@
 #include "CommandParser.h"
 #include "ConsoleHandler.h"
 
-namespace Actions
-{
-
 const std::vector<std::string> admin = {
     "quit",
     "pray"
@@ -91,7 +88,7 @@ ActionType GetActionType(const std::string& command, bool inCombat)
     if (StringIn(command, admin))
         return ActionType::ADMIN;
     else if (StringIn(command, movement))
-        return ActionType::MOVEMENT;
+        return ActionType::DIRECTION;
     else if (StringIn(command, action))
         return ActionType::ACTIVITY;
     else if (StringIn(command, skill))
@@ -124,7 +121,7 @@ void GetHelpFile(const std::vector<std::string>& tokens, ConsoleHandler* console
 
 bool PreProcessCommand(const std::string& line, ConsoleHandler* console)
 {
-    const std::vector<std::string> tokens = Parse::TokenizeCommand(line);
+    const std::vector<std::string> tokens = TokenizeCommand(line);
 
     if (tokens.empty())
         return false;
@@ -135,5 +132,3 @@ bool PreProcessCommand(const std::string& line, ConsoleHandler* console)
     }
     return true;
 }
-
-} // namespace Actions

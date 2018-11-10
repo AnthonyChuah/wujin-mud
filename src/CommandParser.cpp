@@ -2,9 +2,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-namespace Parse
-{
-
 std::vector<std::string> TokenizeCommand(const std::string& command)
 {
     std::vector<std::string> tokens;
@@ -16,5 +13,3 @@ std::vector<std::string> TokenizeCommand(const std::string& command)
                  boost::token_compress_on);
     return tokens;
 }
-
-} // namespace Parse
