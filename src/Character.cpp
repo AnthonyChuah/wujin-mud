@@ -120,6 +120,7 @@ void Character::DoMove(const std::vector<std::string>& tokens)
     }
     else
     {
+        printf("Character is trying to move %s\n", PrintDirection(direction).c_str());
         Move(direction);
     }
 }
@@ -135,8 +136,10 @@ bool Character::Move(const std::string& first, const std::string& second)
         if (distance <= GetSpeed())
         {
             _location.minor = target;
+            printf("Character has moved to %hhu, %hhu\n", x, y);
             return true;
         }
+        printf("Character does not have the speed to move to %hhu, %hhu\n", x, y);
     }
     return false;
 }
@@ -148,7 +151,9 @@ bool Character::Move(Direction direction)
 
     if (edge == direction)
     {
+        printf("Character is leaving zone from location %s\n", _location.PrettyPrint().c_str());
         Coordinates startZone = _location.major;
+        Coordinates startSquare = _location.minor;
         if (_location.TravelZone(direction) && _world->ExistZone(_location.major))
         {
             _world->CharacterExitZone(startZone, this);
@@ -165,15 +170,14 @@ bool Character::Move(Direction direction)
         }
         else
         {
-            _location.major = startZone;
+            _location.major = startZone; _location.minor = startSquare;
             _output->append("You were unable to enter the zone to the ");
             _output->append(PrintDirection(direction));
             _output->append(".\n");
             return false;
         }
     }
-
-    if (edge == Direction::INVALID)
+    else
     {
         int16_t xmul, ymul;
         std::tie(xmul, ymul) = GetXYDirections(direction);
@@ -181,6 +185,8 @@ bool Character::Move(Direction direction)
         int ydest = int(_location.minor.y) + ymul * stride;
         _location.minor.x = Clamp(xdest, 255, 0);
         _location.minor.y = Clamp(ydest, 255, 0);
+        printf("Character has moved within the zone to the spot (%hhu, %hhu)\n",
+               _location.minor.x, _location.minor.y);
         // Once implemented, give Character basic info in their new square
         PrintBriefLook();
         // Once implemented, trigger Monster Aggro in Character's Zone

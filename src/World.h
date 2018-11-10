@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "rapidjson/document.h"
+
 struct Coordinates
 {
     uint8_t x;
@@ -59,6 +61,10 @@ class Character;
 
 struct Zone
 {
+    Zone(const std::string& n, const std::string& desc, Coordinates c)
+        : name(n), description(desc), coord(c)
+    {}
+
     std::string name;
     std::string description;
     Coordinates coord;
@@ -76,6 +82,9 @@ struct Zone
 std::pair<int16_t, int16_t> GetXYDirections(Direction direction);
 Direction GetDirection(const std::string& direction);
 std::string PrintDirection(Direction direction);
+
+// May throw exceptions which we will not catch: something's wrong with a JSON file if exception
+Coordinates GetCoordinatesFromString(const std::string& str, char delim);
 
 constexpr uint16_t DELAY_ZONETRAVEL = 40;
 
@@ -99,5 +108,8 @@ public:
     void CharacterExitZone(Coordinates coord, Character* self);
     void CharacterEnterZone(Coordinates coord, Character* self);
 private:
+    bool CheckDomValid(const rapidjson::Document& dom) const;
+    void PopulateZones(const rapidjson::Document& dom);
+
     std::unordered_map<Coordinates, Zone> _zones;
 };

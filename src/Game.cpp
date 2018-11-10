@@ -22,7 +22,7 @@ void ToProperCase(std::string& str)
 
 }
 
-Game::Game() : _world("world.dat")
+Game::Game() : _world("world.json")
 {
     _disconnects.reserve(2); // Unlikely to get more than 2 disconnects in same 50 ms window
 }

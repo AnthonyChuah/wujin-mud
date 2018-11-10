@@ -1,9 +1,13 @@
 #include "World.h"
 
 #include "Character.h"
+#include "Utils.h"
 
 #include <cmath>
+#include <cstdio>
 #include <fstream>
+
+#include "rapidjson/filereadstream.h"
 
 uint8_t GetDistance(Coordinates from, Coordinates to)
 {
@@ -104,13 +108,13 @@ bool Location::TravelZone(Direction direction)
 std::string Location::PrettyPrint() const
 {
     std::string print = "[";
-    print += major.x;
+    print += std::to_string(major.x);
     print += ", ";
-    print += major.y;
+    print += std::to_string(major.y);
     print += "] (";
-    print += minor.x;
+    print += std::to_string(minor.x);
     print += ", ";
-    print += minor.y;
+    print += std::to_string(minor.y);
     print += ")";
     return print;
 }
@@ -119,9 +123,9 @@ std::string Zone::PrettyPrint() const
 {
     std::string print = name;
     print += "[";
-    print += coord.x;
+    print += std::to_string(coord.x);
     print += ", ";
-    print += coord.y;
+    print += std::to_string(coord.y);
     print += "]";
     return print;
 }
@@ -205,9 +209,62 @@ std::string PrintDirection(Direction direction)
     }
 }
 
+Coordinates GetCoordinatesFromString(const std::string& str, char delim)
+{
+    size_t pos = str.find(delim);
+    assert(pos != std::string::npos);
+    int xx = std::stoi(str.substr(0, pos));
+    int yy = std::stoi(str.substr(pos + 1));
+    auto x = uint8_t(Clamp(xx, 255, 0));
+    auto y = uint8_t(Clamp(yy, 255, 0));
+    return {x, y};
+}
+
 World::World(const std::string& file)
 {
-    (void) file;
+    bool success = false;
+    rapidjson::Document dom;
+
+    std::string fileName = std::string("../data/") + file;
+    FILE* f = fopen(fileName.c_str(), "rb");
+    if (f)
+    {
+        char buffer[65536];
+        rapidjson::FileReadStream jsonStream(f, buffer, sizeof(buffer));
+        dom.ParseStream(jsonStream);
+        if (!CheckDomValid(dom))
+            printf("Invalid DOM in world data file %s", file.c_str());
+        else
+            success = true;
+    }
+
+    if (success)
+        PopulateZones(dom);
+}
+
+bool World::CheckDomValid(const rapidjson::Document& dom) const
+{
+    if (!dom.HasMember("196 128")) return false;
+    if (!dom["196 128"].HasMember("name")) return false;
+    if (!dom["196 128"].HasMember("description")) return false;
+    if (!dom["196 128"]["name"].IsString()) return false;
+    if (!dom["196 128"]["description"].IsString()) return false;
+    return true;
+}
+
+void World::PopulateZones(const rapidjson::Document& dom)
+{
+    for (auto& member : dom.GetObject())
+    {
+        std::string coordinates = member.name.GetString();
+        Coordinates coord = GetCoordinatesFromString(coordinates, ' ');
+        std::string name = member.value["name"].GetString();
+        std::string description = member.value["description"].GetString();
+        _zones.emplace(std::piecewise_construct,
+                       std::forward_as_tuple(coord),
+                       std::forward_as_tuple(name, description, coord));
+        printf("Loaded Zone from file: %hhu, %hhu: %s\n", coord.x, coord.y, name.c_str());
+    }
 }
 
 void World::CharacterExitZone(Coordinates coord, Character* self)
