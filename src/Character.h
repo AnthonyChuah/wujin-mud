@@ -13,8 +13,8 @@ class CharacterFileLoader;
 class Character
 {
 public:
-    Character(std::string* output, World* world, const std::string& name);
-    Character(std::string* output, World* world, const CharacterFileLoader& loader);
+    Character(std::string* output, World* world, const std::string& name, size_t id);
+    Character(std::string* output, World* world, const CharacterFileLoader& loader, size_t id);
     Character() = default;
 
     void ExecuteCommand(const std::string& command);
@@ -27,7 +27,7 @@ public:
     const Zone& GetZone() const { return _world->GetZone(_location.major); }
     uint8_t GetSpeed() const { return _speed; } // Implement logic in the future
     // In case of player re-connection, must re-map new connection's buffer to character.
-    void MapOutputBuffer(std::string* output) { _output = output; }
+    void MapToConnection(size_t id, std::string* output) { _id = id; _output = output; }
 
 private:
     void DoAdmin(const std::vector<std::string>& tokens);
@@ -51,6 +51,7 @@ private:
     // Consider having a Zone ptr instead of indirectly looking up through World
 
     std::string _name;
+    size_t _id;
     EquipmentSet _equipment;
     Location _location;
 

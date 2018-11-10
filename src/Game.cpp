@@ -22,9 +22,9 @@ void ToProperCase(std::string& str)
 
 }
 
-Game::Game() : _world("world.json")
+Game::Game() : _world("world.json", *this)
 {
-    _disconnects.reserve(2); // Unlikely to get more than 2 disconnects in same 50 ms window
+    _disconnects.reserve(2);
 }
 
 void Game::MainLoop()
@@ -60,16 +60,32 @@ void Game::AddNewConnection(TcpConnection* connection)
  * Game should wait until the next cycle before destroying connections, to allow
  * final words to be sent through the socket via async_write.
  */
+
+void Game::DisconnectById(size_t id)
+{
+    printf("Game::DisconnectById user connection of ID %lu\n", id);
+    _disconnects.push_back(id);
+}
+
 void Game::ExecuteGameCycle()
 {
+    /**
+     * When a given user is removed, we must handle destruction in several places:
+     * 1. Destroy associated Character here in Game, and the name-to-ID mapping
+     * 2. Destroy Character pointers in the corresponding Zone in the World
+     * 3. Destroy TcpConnection: this also closes the socket
+     */
     for (auto id : _disconnects)
     {
-        std::cout << "Clean up a dead user connection of ID " << id << "\n";
         _connections.erase(id);
 
+        // Not all connections are associated with a logged-in character
         auto iter = _characters.find(id);
         if (iter != _characters.end())
         {
+            Character* character = &iter->second;
+            Location loc = character->GetLocation();
+            _world.CharacterExitZone(loc.major, character);
             std::string nameToDelete = _characters.at(id).GetName();
             _characters.erase(id);
             _nameToId.erase(nameToDelete);
@@ -79,7 +95,7 @@ void Game::ExecuteGameCycle()
     }
     _disconnects.clear();
 
-    // Make the world trigger any non-player-initiated events
+    // xxx make the world trigger any non-player-initiated events
     // e.g. damage over time, debuff fading
 
     std::string command;
@@ -168,7 +184,7 @@ void Game::HandleCharacterPassword(TcpConnection* connection, const std::string&
         auto pairiter = _characters.emplace(std::piecewise_construct,
                                             std::forward_as_tuple(connection->GetId()),
                                             std::forward_as_tuple(&connection->GetOutputBuffer(),
-                                                                  &_world, loader));
+                                                                  &_world, loader, connection->GetId()));
         _nameToId.emplace(std::make_pair(name, connection->GetId()));
 
         std::cout << "Loaded Character whose ID is " << connection->GetId() << "\n";

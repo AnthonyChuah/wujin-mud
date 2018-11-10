@@ -2,6 +2,7 @@
 #include "Character.h"
 #include "CharacterFileLoader.h"
 #include "CommandParser.h"
+#include "Game.h"
 #include "Utils.h"
 
 #include <algorithm>
@@ -19,12 +20,12 @@ bool HasOnlyDigits(const std::string& str)
                        });
 }
 
-Character::Character(std::string* output, World* world, const std::string& name)
-    : _output(output), _world(world), _name(name)
+Character::Character(std::string* output, World* world, const std::string& name, size_t id)
+    : _output(output), _world(world), _name(name), _id(id)
 {}
 
-Character::Character(std::string* output, World* world, const CharacterFileLoader& loader)
-    : _output(output), _world(world)
+Character::Character(std::string* output, World* world, const CharacterFileLoader& loader, size_t id)
+    : _output(output), _world(world), _id(id)
 {
     _name = loader._character._name;
     _equipment = loader._character._equipment;
@@ -40,6 +41,8 @@ void Character::ExecuteCommand(const std::string& command)
         return;
 
     std::vector<std::string> tokens = TokenizeCommand(command);
+    for (auto& str : tokens)
+        printf("Character::ExecuteCommand got token '%s'\n", str.c_str());
     if (tokens.empty())
         return;
 
@@ -83,6 +86,7 @@ void Character::DoAdmin(const std::vector<std::string>& tokens)
     {
         _world->CharacterExitZone(_location.major, this);
         _output->append("Good-bye, see you again soon in the Age of Wujin!\n");
+        _world->GetGame().DisconnectById(_id);
     }
 }
 
@@ -95,10 +99,11 @@ void Character::DoMove(const std::vector<std::string>& tokens)
     }
 
     Direction direction = GetDirection(tokens[0]);
+    printf("Character is trying to move %s\n", PrintDirection(direction).c_str());
     if (direction == Direction::MOVE)
     {
         // This is "move", the only non-directional movement
-        if (tokens.size() == 3)
+        if (tokens.size() >= 3)
         {
             const std::string& first = tokens[1];
             const std::string& second = tokens[2];
@@ -119,10 +124,7 @@ void Character::DoMove(const std::vector<std::string>& tokens)
         }
     }
     else
-    {
-        printf("Character is trying to move %s\n", PrintDirection(direction).c_str());
         Move(direction);
-    }
 }
 
 bool Character::Move(const std::string& first, const std::string& second)
@@ -137,6 +139,7 @@ bool Character::Move(const std::string& first, const std::string& second)
         {
             _location.minor = target;
             printf("Character has moved to %hhu, %hhu\n", x, y);
+            PrintBriefLook();
             return true;
         }
         printf("Character does not have the speed to move to %hhu, %hhu\n", x, y);

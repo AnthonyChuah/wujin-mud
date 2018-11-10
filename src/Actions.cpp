@@ -15,7 +15,8 @@ const std::vector<std::string> movement = {
     "ne", "northeast",
     "nw", "northwest",
     "se", "southeast",
-    "sw", "southwest"
+    "sw", "southwest",
+    "m", "move"
 };
 
 const std::vector<std::string> action = {
