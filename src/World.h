@@ -91,10 +91,12 @@ constexpr uint16_t DELAY_ZONETRAVEL = 40;
 /**
  * World can do book-keeping for entities and zones in the world
  */
+class Game;
+
 class World
 {
 public:
-    World(const std::string& file);
+    World(const std::string& file, Game& game);
 
     const Zone& GetZone(Coordinates coord) const
     {
@@ -105,6 +107,7 @@ public:
         return _zones.find(coord) != _zones.end();
     }
 
+    Game& GetGame() { return _game; }
     void CharacterExitZone(Coordinates coord, Character* self);
     void CharacterEnterZone(Coordinates coord, Character* self);
 private:
@@ -112,4 +115,5 @@ private:
     void PopulateZones(const rapidjson::Document& dom);
 
     std::unordered_map<Coordinates, Zone> _zones;
+    Game& _game;
 };

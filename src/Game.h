@@ -32,6 +32,7 @@ public:
         _server = server;
     }
     void AddNewConnection(TcpConnection* connection);
+    void DisconnectById(size_t id);
 
 private:
     void ExecuteGameCycle();

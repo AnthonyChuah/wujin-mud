@@ -1,3 +1,4 @@
+#include "Character.h"
 #include "TcpConnection.h"
 #include "TcpServer.h"
 
@@ -19,6 +20,13 @@ TcpConnection::~TcpConnection()
     _timeout.cancel();
     _connected = false;
 }
+
+void TcpConnection::AttachCharacter(Character* character)
+{
+    _character = character;
+    _character->MapToConnection(GetId(), &_message);
+}
+
 
 std::unique_ptr<TcpConnection> TcpConnection::Make(boost::asio::io_service& ioService,
                                                    size_t id, TcpServer* server)

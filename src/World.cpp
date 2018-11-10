@@ -1,6 +1,7 @@
 #include "World.h"
 
 #include "Character.h"
+#include "Game.h"
 #include "Utils.h"
 
 #include <cmath>
@@ -204,6 +205,8 @@ std::string PrintDirection(Direction direction)
         return "southeast";
     case Direction::SOUTHWEST:
         return "southwest";
+    case Direction::MOVE:
+        return "move";
     default:
         return "invalid";
     }
@@ -220,7 +223,8 @@ Coordinates GetCoordinatesFromString(const std::string& str, char delim)
     return {x, y};
 }
 
-World::World(const std::string& file)
+World::World(const std::string& file, Game& game)
+    : _game(game)
 {
     bool success = false;
     rapidjson::Document dom;

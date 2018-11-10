@@ -22,11 +22,7 @@ public:
         return _socket;
     }
 
-    void AttachCharacter(Character* character)
-    {
-        _character = character;
-    }
-
+    void AttachCharacter(Character* character);
     void DetachCharacter()
     {
         _character = nullptr;
