@@ -80,6 +80,12 @@ void Character::ExecuteCommand(const std::string& command)
     }
 }
 
+bool Character::HasConqueredZone(Coordinates zone) const
+{
+    (void) zone;
+    return true; // xxx implement check
+}
+
 void Character::DoAdmin(const std::vector<std::string>& tokens)
 {
     if (tokens[0] == "quit")
@@ -99,7 +105,6 @@ void Character::DoMove(const std::vector<std::string>& tokens)
     }
 
     Direction direction = GetDirection(tokens[0]);
-    printf("Character is trying to move %s\n", PrintDirection(direction).c_str());
     if (direction == Direction::MOVE)
     {
         // This is "move", the only non-directional movement
@@ -123,6 +128,14 @@ void Character::DoMove(const std::vector<std::string>& tokens)
             _output->append(" units (i.e. your speed)\n");
         }
     }
+    else if (direction == Direction::TRAVEL)
+    {
+        Direction traveldir = GetDirection(tokens[1]);
+        if (HasConqueredZone(_location.major))
+            DoTravel(traveldir);
+        else
+            _output->append("Unable to fast travel without conquering this zone.\n");
+    }
     else
         Move(direction);
 }
@@ -143,6 +156,7 @@ bool Character::Move(const std::string& first, const std::string& second)
             return true;
         }
         printf("Character does not have the speed to move to %hhu, %hhu\n", x, y);
+        _output->append("That is too far away for a single step. Get closer.\n");
     }
     return false;
 }
@@ -153,33 +167,7 @@ bool Character::Move(Direction direction)
     Direction edge = _location.WhichEdge();
 
     if (edge == direction)
-    {
-        printf("Character is leaving zone from location %s\n", _location.PrettyPrint().c_str());
-        Coordinates startZone = _location.major;
-        Coordinates startSquare = _location.minor;
-        if (_location.TravelZone(direction) && _world->ExistZone(_location.major))
-        {
-            _world->CharacterExitZone(startZone, this);
-            _world->CharacterEnterZone(_location.major, this);
-            _output->append("You leave this zone and enter the zone to the ");
-            _output->append(PrintDirection(direction));
-            _output->append("...\n");
-            // Once implemented, trigger MonsterSpawn at new zone
-            // Once implemented, give Character basic information at their new zone
-            PrintBriefLook();
-            // Once implemented, give Character a free "look" at their new zone
-            // Once implemented, trigger Monster aggro upon Character's new location
-            SetDelay(DELAY_ZONETRAVEL);
-        }
-        else
-        {
-            _location.major = startZone; _location.minor = startSquare;
-            _output->append("You were unable to enter the zone to the ");
-            _output->append(PrintDirection(direction));
-            _output->append(".\n");
-            return false;
-        }
-    }
+        return DoTravel(direction);
     else
     {
         int16_t xmul, ymul;
@@ -198,9 +186,42 @@ bool Character::Move(Direction direction)
     return true;
 }
 
+bool Character::DoTravel(Direction direction)
+{
+    printf("Character is leaving zone from location %s\n", _location.PrettyPrint().c_str());
+    Coordinates startZone = _location.major;
+    Coordinates startSquare = _location.minor;
+    if (_location.TravelZone(direction) && _world->ExistZone(_location.major))
+    {
+        _world->CharacterExitZone(startZone, this);
+        _world->CharacterEnterZone(_location.major, this);
+        _output->append("You leave this zone and enter the zone to the ");
+        _output->append(PrintDirection(direction));
+        _output->append("...\n");
+        // Once implemented, trigger MonsterSpawn at new zone
+        // Once implemented, give Character basic information at their new zone
+        PrintBriefLook();
+        // Once implemented, trigger Monster aggro upon Character's new location
+        SetDelay(DELAY_ZONETRAVEL);
+        return true;
+    }
+
+    _location.major = startZone; _location.minor = startSquare;
+    _output->append("You were unable to enter the zone to the ");
+    _output->append(PrintDirection(direction));
+    _output->append(".\n");
+    return false;
+}
+
 void Character::DoActivity(const std::vector<std::string>& tokens)
 {
-    (void) tokens;
+    if (tokens[0] == "creep")
+        ToggleCreep();
+    else if (tokens[0] == "r" || tokens[0] == "rest")
+        SetRest(true);
+    else if (tokens[0] == "stand" || tokens[0] == "st")
+        SetRest(false);
+    // xxx implement other standard activities
 }
 
 void Character::DoSkill(const std::vector<std::string>& tokens)
@@ -231,10 +252,20 @@ void Character::DoCombatSpell(const std::vector<std::string>& tokens)
 void Character::ToggleCreep()
 {
     _inching = !_inching;
+    printf("Player character toggled creep to %d\n", _inching);
     if (_inching)
         _output->append("You begin to creep.\n");
     else
         _output->append("You stop creeping.\n");
+}
+
+void Character::SetRest(bool resting)
+{
+    _resting = resting;
+    if (resting)
+        _output->append("You rest.\n");
+    else
+        _output->append("You stop resting and get up.\n");
 }
 
 void Character::PrintBriefLook()

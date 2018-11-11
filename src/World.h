@@ -44,7 +44,8 @@ enum class Direction : uint8_t
     NORTHWEST = 6,
     SOUTHEAST = 7,
     SOUTHWEST = 8,
-    MOVE = 9
+    MOVE = 9,
+    TRAVEL = 10
 };
 
 struct Location

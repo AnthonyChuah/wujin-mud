@@ -4,7 +4,9 @@
 
 const std::vector<std::string> admin = {
     "quit",
-    "pray"
+    "sc", "score",
+    "stats",
+    "i", "items"
 };
 
 const std::vector<std::string> movement = {
@@ -16,16 +18,17 @@ const std::vector<std::string> movement = {
     "nw", "northwest",
     "se", "southeast",
     "sw", "southwest",
-    "m", "move"
+    "m", "move",
+    "tr", "travel"
 };
 
 const std::vector<std::string> action = {
-    "k", "kill",
-    "h", "hunt",
     "quest",
     "r", "rest",
-    "b", "buy",
-    "sell"
+    "st", "stand",
+    "buy",
+    "sell",
+    "creep"
 };
 
 const std::vector<std::string> skill = {
