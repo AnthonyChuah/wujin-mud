@@ -108,21 +108,30 @@ void Game::ExecuteGameCycle()
             continue;
         }
 
-        if (!con->HasNextCommand())
-            continue;
-
-        command = con->GetNextCommand();
-        command = command.substr(0, command.find_first_of("\n\r"));
-
-        if (command.empty())
-            return;
-
         if (con->UserInGame())
-            con->GetCharacter()->ExecuteCommand(command);
-        else if (con->UserTryingLogin())
-            HandleCharacterPassword(con, command);
+        {
+            Character* character = con->GetCharacter();
+            character->DecrementDelay();
+            if (!con->HasNextCommand())
+                continue;
+            if (character->GetDelay() > 0)
+                continue;
+
+            command = con->GetNextCommand(); // pop the command
+            command = command.substr(0, command.find_first_of("\n\r"));
+            character->ExecuteCommand(command);
+        }
         else
-            HandleCharacterLogin(con, command);
+        {
+            if (!con->HasNextCommand())
+                continue;
+            command = con->GetNextCommand();
+            command = command.substr(0, command.find_first_of("\n\r"));
+            if (con->UserTryingLogin())
+                HandleCharacterPassword(con, command);
+            else
+                HandleCharacterLogin(con, command);
+        }
     }
 
     for (auto& c : _connections)

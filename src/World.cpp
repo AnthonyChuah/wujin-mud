@@ -182,6 +182,8 @@ Direction GetDirection(const std::string& direction)
         return Direction::SOUTHWEST;
     else if (direction == "m" || direction == "move")
         return Direction::MOVE;
+    else if (direction == "tr" || direction == "travel")
+        return Direction::TRAVEL;
     return Direction::INVALID;
 }
 

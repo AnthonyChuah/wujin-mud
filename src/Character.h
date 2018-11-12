@@ -21,13 +21,16 @@ public:
 
     const std::string& GetName() const { return _name; }
     void SetName(const std::string& name) { _name = name; }
-    void SetDelay(uint16_t delay) { _delay = delay; }
+    void SetDelay(uint16_t delay) { _delay = delay; printf("Set delay to %hu\n", _delay); }
+    uint16_t GetDelay() const { return _delay; }
+    void DecrementDelay() { if (_delay > 0) --_delay; }
     Location GetLocation() const { return _location; }
     void SetLocation(Location loc) { _location = loc; }
     const Zone& GetZone() const { return _world->GetZone(_location.major); }
     uint8_t GetSpeed() const { return _speed; } // Implement logic in the future
     // In case of player re-connection, must re-map new connection's buffer to character.
     void MapToConnection(size_t id, std::string* output) { _id = id; _output = output; }
+    bool HasConqueredZone(Coordinates zone) const;
 
 private:
     void DoAdmin(const std::vector<std::string>& tokens);
@@ -35,6 +38,7 @@ private:
     void DoMove(const std::vector<std::string>& tokens);
     bool Move(const std::string& first, const std::string& second);
     bool Move(Direction direction);
+    bool DoTravel(Direction direction);
 
     void DoActivity(const std::vector<std::string>& tokens);
     void DoSkill(const std::vector<std::string>& tokens);
@@ -44,6 +48,7 @@ private:
     void DoCombatSpell(const std::vector<std::string>& tokens);
 
     void ToggleCreep();
+    void SetRest(bool resting);
     void PrintBriefLook();
 
     std::string* _output = nullptr;
@@ -60,7 +65,10 @@ private:
 
     // Expand these out into all non-transient character attributes and skills
     uint8_t _speed = 8;
+
+    // Expand these out into all character modes
     bool _inching = false;
+    bool _resting = false;
     bool _inCombat = false;
     /**
      * Hp/MaxHp, Mp/MaxMp, Sta/MaxSta
