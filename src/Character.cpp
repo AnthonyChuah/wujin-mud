@@ -1,4 +1,5 @@
 #include "Actions.h"
+#include "Attributes.h"
 #include "Character.h"
 #include "CharacterFileLoader.h"
 #include "CommandParser.h"
@@ -9,7 +10,6 @@
 #include <cctype>
 #include <cstdint>
 #include <iostream>
-#include <regex>
 
 bool HasOnlyDigits(const std::string& str)
 {
