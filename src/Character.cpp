@@ -153,6 +153,7 @@ bool Character::Move(const std::string& first, const std::string& second)
             _location.minor = target;
             printf("Character has moved to %hhu, %hhu\n", x, y);
             PrintBriefLook();
+            SetDelay(DELAY_MOVE);
             return true;
         }
         printf("Character does not have the speed to move to %hhu, %hhu\n", x, y);
@@ -180,6 +181,7 @@ bool Character::Move(Direction direction)
                _location.minor.x, _location.minor.y);
         // Once implemented, give Character basic info in their new square
         PrintBriefLook();
+        SetDelay(DELAY_MOVE);
         // Once implemented, trigger Monster Aggro in Character's Zone
     }
 
