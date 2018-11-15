@@ -1,3 +1,4 @@
+#include "Attributes.h"
 #include "CharacterFileLoader.h"
 #include "CommandBuffer.h"
 #include "Game.h"
@@ -108,7 +109,8 @@ void Game::ExecuteGameCycle()
             continue;
         }
 
-        if (con->UserInGame())
+        ConnectState state = con->GetConnectState();
+        if (state == ConnectState::PLAYING)
         {
             Character* character = con->GetCharacter();
             character->DecrementDelay();
@@ -127,9 +129,11 @@ void Game::ExecuteGameCycle()
                 continue;
             command = con->GetNextCommand();
             command = command.substr(0, command.find_first_of("\n\r"));
-            if (con->UserTryingLogin())
+            if (state == ConnectState::LOGGING_IN)
                 HandleCharacterPassword(con, command);
-            else
+            else if (state == ConnectState::CREATE_CHARACTER)
+                HandleCharacterCreation(con, command);
+            else if (state == ConnectState::NEW)
                 HandleCharacterLogin(con, command);
         }
     }
@@ -156,12 +160,17 @@ void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cm
         output.append("Invalid login name. Only letters allowed, no spaces. Try again.\n");
         return;
     }
+    if (cmd.length() > 16)
+    {
+        connection->GetOutputBuffer().append("Invalid login name. Maximum is 16 characters.\n");
+        return;
+    }
 
     std::string name = cmd;
     ToProperCase(name);
 
     // Then, ask for password and set user state to "trying login"
-    connection->SetUserTryingLogin();
+    connection->SetConnectState(ConnectState::LOGGING_IN);
     connection->SetLogin(name);
     connection->GetOutputBuffer().append("Trying to login as player character ");
     connection->GetOutputBuffer().append(name);
@@ -184,6 +193,7 @@ void Game::HandleCharacterPassword(TcpConnection* connection, const std::string&
 
         connection->GetOutputBuffer().append("Character is already logged on. Reconnecting.\n");
         connection->AttachCharacter(&pairiter.first->second);
+        connection->SetConnectState(ConnectState::PLAYING);
         return;
     }
 
@@ -202,15 +212,46 @@ void Game::HandleCharacterPassword(TcpConnection* connection, const std::string&
         connection->GetOutputBuffer().append(name);
         connection->GetOutputBuffer().append("!");
         connection->AttachCharacter(&pairiter.first->second);
+        connection->SetConnectState(ConnectState::PLAYING);
     }
     else
     {
         std::cout << "Failed to load character file " << loader.GetName() << "\n";
         std::cout << "Attempt to do character creation!\n";
-        connection->GetOutputBuffer().append("Character does not exist. Character creation not yet implemented.\n");
-        connection->GetOutputBuffer().append("Please reconnect and try again.");
+        connection->GetOutputBuffer().append("Character does not exist. Please create your new character.\n");
+        connection->GetOutputBuffer().append("Choose your attributes [strength dexterity constitution intelligence willpower perception].\n");
+        connection->GetOutputBuffer().append("Each attribute must be a number from 0 to 10 inclusive, and all 6 attributes must sum to 42.\n");
+        connection->GetOutputBuffer().append("Example: '10 7 10 7 3 5' to choose 10 strength, 7 dexterity, 10 constitution, 7 intelligence, 3 willpower, and 5 perception.\n");
+        connection->SetNewCharacterPassword(cmd);
+        connection->SetConnectState(ConnectState::CREATE_CHARACTER);
+    }
+}
 
+void Game::HandleCharacterCreation(TcpConnection* connection, const std::string& cmd)
+{
+    Attributes attr;
+    if (ParseAttributes(cmd, attr))
+    {
+        connection->GetOutputBuffer().append("You have created a new character called ");
+        connection->GetOutputBuffer().append(connection->GetLogin());
+        connection->GetOutputBuffer().append(".\nWelcome to Fort Victory, where new adventurers begin!\n");
+
+        // This ctor makes a new playerfile
+        auto loader = CharacterFileLoader(connection->GetLogin().c_str(),
+                                          connection->GetNewCharacterPassword(), attr);
+
+        auto pairiter = _characters.emplace(std::piecewise_construct,
+                                            std::forward_as_tuple(connection->GetId()),
+                                            std::forward_as_tuple(&connection->GetOutputBuffer(),
+                                                                  &_world, loader, connection->GetId()));
+        CharacterFileLoader::SaveCharacterToFile(pairiter.first->second);
+
+        connection->AttachCharacter(&pairiter.first->second);
+        connection->SetConnectState(ConnectState::PLAYING);
+    }
+    else
+    {
+        connection->GetOutputBuffer().append("Invalid chosen attributes. Please reconnect and try again!\n");
         _disconnects.push_back(connection->GetId());
-        // Implement later
     }
 }

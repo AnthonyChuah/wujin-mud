@@ -38,6 +38,7 @@ private:
     void ExecuteGameCycle();
     void HandleCharacterLogin(TcpConnection* connection, const std::string& cmd);
     void HandleCharacterPassword(TcpConnection* connection, const std::string& cmd);
+    void HandleCharacterCreation(TcpConnection* connection, const std::string& cmd);
 
     World _world;
     TcpServer* _server;

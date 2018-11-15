@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Attributes.h"
 #include "Creature.h"
 #include "Equipment.h"
 #include "World.h"
@@ -13,6 +14,8 @@ class CharacterFileLoader;
 class Character
 {
 public:
+    friend class CharacterFileLoader;
+
     Character(std::string* output, World* world, const std::string& name, size_t id);
     Character(std::string* output, World* world, const CharacterFileLoader& loader, size_t id);
     Character() = default;
@@ -57,14 +60,15 @@ private:
 
     std::string _name;
     size_t _id;
+    Attributes _attr;
     EquipmentSet _equipment;
-    Location _location;
+    Location _location = {{196, 128}, {0, 0}};
 
     // Expand these out into all transient scores
     uint16_t _delay = 0;
 
     // Expand these out into all non-transient character attributes and skills
-    uint8_t _speed = 8;
+    uint8_t _speed = 8; // Speed should be perhaps tied to Level and active buffs/debuffs
 
     // Expand these out into all character modes
     bool _inching = false;
