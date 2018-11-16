@@ -87,7 +87,8 @@ std::string PrintDirection(Direction direction);
 // May throw exceptions which we will not catch: something's wrong with a JSON file if exception
 Coordinates GetCoordinatesFromString(const std::string& str, char delim);
 
-constexpr uint16_t DELAY_ZONETRAVEL = 40;
+constexpr uint16_t DELAY_ZONETRAVEL = 30;
+constexpr uint16_t DELAY_MOVE = 5;
 
 /**
  * World can do book-keeping for entities and zones in the world
