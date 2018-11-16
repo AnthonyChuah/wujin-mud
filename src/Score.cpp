@@ -4,6 +4,13 @@
 
 void Score::RecalculateMaxes(uint8_t level, uint8_t constitution, uint8_t willpower)
 {
+    constexpr uint16_t basehp = 500;
+    constexpr uint16_t basemp = 500;
+    constexpr uint16_t basesta = 500;
+    constexpr uint16_t fixedhpcon = 300;
+    constexpr uint16_t fixedmpwil = 300;
+    constexpr uint16_t fixedstacon = 300;
+
     constexpr uint16_t baseHpPerLevel = basehp / Progress::maxLevel;
     uint16_t levelGrantedHp = baseHpPerLevel * level;
     constexpr uint16_t baseMpPerLevel = basemp / Progress::maxLevel;
