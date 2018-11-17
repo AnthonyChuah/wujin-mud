@@ -70,6 +70,9 @@ void Game::DisconnectById(size_t id)
 
 void Game::ExecuteGameCycle()
 {
+    ++_elapsed;
+    --_toTick;
+
     /**
      * When a given user is removed, we must handle destruction in several places:
      * 1. Destroy associated Character here in Game, and the name-to-ID mapping
@@ -96,8 +99,11 @@ void Game::ExecuteGameCycle()
     }
     _disconnects.clear();
 
-    // xxx make the world trigger any non-player-initiated events
-    // e.g. damage over time, debuff fading
+    if (_toTick == 0)
+    {
+        Tick(); // e.g. damage over time, debuff fading
+        _toTick = CYCLES_PER_TICK;
+    }
 
     std::string command;
     for (auto& c : _connections)
@@ -140,6 +146,16 @@ void Game::ExecuteGameCycle()
 
     for (auto& c : _connections)
         c.second->StartWrite(); // Flush all buffered messages to all connected clients
+}
+
+void Game::Tick()
+{
+    printf("Game tick has happened!");
+    for (auto& pairit : _characters)
+    {
+        pairit.second.Regen();
+        pairit.second.PeriodicEffects();
+    }
 }
 
 void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cmd)

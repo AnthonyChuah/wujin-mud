@@ -20,7 +20,7 @@ class Game
 public:
     static constexpr uint32_t CYCLE_USEC = 50000; // microseconds
     static constexpr uint32_t CYCLES_PER_ROUND = 10;
-    static constexpr uint32_t ROUNDS_PER_TICK = 60;
+    static constexpr uint32_t CYCLES_PER_TICK = 255;
 
     Game();
 
@@ -36,6 +36,7 @@ public:
 
 private:
     void ExecuteGameCycle();
+    void Tick();
     void HandleCharacterLogin(TcpConnection* connection, const std::string& cmd);
     void HandleCharacterPassword(TcpConnection* connection, const std::string& cmd);
     void HandleCharacterCreation(TcpConnection* connection, const std::string& cmd);
@@ -47,6 +48,6 @@ private:
     std::unordered_map<std::string, size_t> _nameToId;
     std::vector<size_t> _disconnects;
     uint32_t _elapsed = 0; // elapsed cycles since server start: won't overflow
-    uint8_t _toTick = 255; // cycles until next tick
+    uint8_t _toTick = CYCLES_PER_TICK; // cycles until next tick
     bool _up = true;
 };
