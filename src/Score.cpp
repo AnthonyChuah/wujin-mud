@@ -2,6 +2,8 @@
 
 #include "Progress.h"
 
+#include <cstdio>
+
 void Score::RecalculateMaxes(uint8_t level, uint8_t constitution, uint8_t willpower)
 {
     constexpr uint16_t basehp = 500;
@@ -56,4 +58,6 @@ void Score::Regen(uint16_t hpMult, uint16_t mpMult, uint16_t staMult)
     if (mp > maxmp) mp = maxmp;
     sta += staRegen;
     if (sta > maxsta) sta = maxsta;
+
+    printf("Score::Regen brought character hp/mp/sta to %hu/%hu/%hu", hp, mp, sta);
 }

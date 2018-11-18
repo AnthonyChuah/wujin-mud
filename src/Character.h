@@ -3,6 +3,8 @@
 #include "Attributes.h"
 #include "Creature.h"
 #include "Equipment.h"
+#include "Items.h"
+#include "Score.h"
 #include "World.h"
 
 #include <cstdint>
@@ -21,6 +23,8 @@ public:
     Character() = default;
 
     void ExecuteCommand(const std::string& command);
+    void Regen();
+    void PeriodicEffects();
 
     const std::string& GetName() const { return _name; }
     void SetName(const std::string& name) { _name = name; }
@@ -53,6 +57,7 @@ private:
     void ToggleCreep();
     void SetRest(bool resting);
     void PrintBriefLook();
+    void ConsumeSupplies();
 
     std::string* _output = nullptr;
     World* _world = nullptr;
@@ -61,6 +66,8 @@ private:
     std::string _name;
     size_t _id;
     Attributes _attr;
+    Score _score;
+    Items _items;
     EquipmentSet _equipment;
     Location _location = {{196, 128}, {0, 0}};
 

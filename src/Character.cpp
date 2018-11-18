@@ -4,6 +4,7 @@
 #include "CharacterFileLoader.h"
 #include "CommandParser.h"
 #include "Game.h"
+#include "Items.h"
 #include "Utils.h"
 
 #include <algorithm>
@@ -78,6 +79,35 @@ void Character::ExecuteCommand(const std::string& command)
         // Error
         break;
     }
+}
+
+void Character::Regen()
+{
+    uint16_t hpMult = 1; uint16_t mpMult = 1; uint16_t staMult = 1;
+    if (_resting)
+    {
+        hpMult = 5; mpMult = 5; staMult = 5;
+    }
+    // xxx Some buffs may give better regen
+    if (_items.supplies > 0)
+        _score.Regen(hpMult, mpMult, staMult); // else no regen happens
+    ConsumeSupplies();
+}
+
+void Character::PeriodicEffects()
+{
+    printf("Character %s processing periodic effect (buff drain, debuff damage)", GetName().c_str());
+    // xxx implement: remember to also force the zone to apply periodics onto monsters
+}
+
+void Character::ConsumeSupplies()
+{
+    uint16_t toConsume = 1;
+    // xxx Some buffs may consume more supplies when toggled
+    if (_items.supplies < toConsume)
+        _items.supplies = 0;
+    else
+        _items.supplies -= toConsume;
 }
 
 bool Character::HasConqueredZone(Coordinates zone) const
