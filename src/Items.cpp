@@ -1,22 +1,24 @@
 #include "Items.h"
 
+#include <cassert>
+#include <cstdio>
+
 uint32_t Loot::GetTotalLootValue() const
 {
     constexpr uint32_t valuePerUnit[5] = {5, 10, 20, 40, 100};
     uint32_t sum = 0;
     for (unsigned i = 0; i < 5; ++i)
         sum += loot[i] * valuePerUnit[i];
-    printf("Calculated total loot value of {%hu, %hu, %hu, %hu, %hu} loot as %u",
+    printf("Calculated total loot value of {%hu, %hu, %hu, %hu, %hu} loot as %u\n",
            loot[0], loot[1], loot[2], loot[3], loot[4], sum);
     return sum;
 }
 
-// Quite horrible, should add unit test
 void Loot::GainLoot(unsigned tier, uint16_t qty)
 {
-    printf("Gained qty %hu loot of tier %u", qty, tier);
+    printf("Gained qty %hu loot of tier %u\n", qty, tier);
     uint16_t lootCounter = 0;
-    for (unsigned i = 0; i < tier; ++i)
+    for (unsigned i = 0; i < 5; ++i)
         lootCounter += loot[i];
     assert(lootCounter <= maxloot);
 
@@ -32,21 +34,23 @@ void Loot::GainLoot(unsigned tier, uint16_t qty)
 
     // Now insert the overflowQty by evicting less-valuable tiers, if any
     uint16_t canEvict[5] = {0};
-    uint16_t evictCount = 0;
     uint16_t overflowCount = overflowQty;
-    for (unsigned i = 0; i < tier; ++i)
+    for (unsigned i = 0; i <= tier; ++i)
     {
-        if (overflowCount <= loot[tier])
-            canEvict[tier] = overflowCount;
+        if (overflowCount <= loot[i])
+        {
+            canEvict[i] = overflowCount;
+            break;
+        }
         else
         {
-            overflowCount -= loot[tier];
-            canEvict[tier] = loot[tier];
+            overflowCount -= loot[i];
+            canEvict[i] = loot[i];
         }
-    }
+    } // Possible to do this in a single pass if we like
 
     // Finally, apply the canEvicts to all loot tiers, and then insert the overflowQty
-    for (unsigned i = 0; i < tier; ++i)
+    for (unsigned i = 0; i <= tier; ++i)
         loot[i] -= canEvict[i];
     loot[tier] += overflowQty;
 }

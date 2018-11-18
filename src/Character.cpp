@@ -97,7 +97,7 @@ void Character::Regen()
 void Character::PeriodicEffects()
 {
     printf("Character %s processing periodic effect (buff drain, debuff damage)", GetName().c_str());
-    // xxx implement
+    // xxx implement: remember to also force the zone to apply periodics onto monsters
 }
 
 void Character::ConsumeSupplies()
