@@ -1,91 +1,93 @@
 #pragma once
 
+#include "Loot.h"
+
 #include <cstdint>
-#include <string>
-#include <utility>
-
-enum class EquipSlot : uint8_t
-{
-    INVALID = 0,
-    MAINHAND = 1,
-    OFFHAND = 2,
-    HEAD = 3,
-    NECK = 4,
-    TORSO = 5,
-    ARMS = 6,
-    HANDS = 7,
-    WAIST = 8,
-    LEGS = 9,
-    FEET = 10,
-    MOUNT = 11
-};
-
-struct Item
-{
-    std::string name;
-    std::string description;
-    uint32_t value;
-    uint32_t weight;
-};
-
-struct Equipment : Item
-{
-    EquipSlot slot;
-};
-
-struct Weapon : Equipment
-{
-    uint32_t deflect;
-    uint32_t damage;
-    bool twohanded;
-    uint8_t reach;
-};
-
-struct Armour : Equipment
-{
-    uint32_t deflect;
-    uint32_t reduction;
-};
-
-struct Mount : Equipment
-{
-    uint32_t speed;
-};
-
-struct EquipmentBonuses
-{
-    uint32_t damage;
-    uint32_t deflect;
-    uint32_t reduction;
-    uint32_t speed;
-    uint32_t weight;
-    uint8_t reach;
-};
 
 /**
- * At some point, implement lookup table of equipment and characters' equipment sets
- * only need to index into the table.
+ * xxx implementation notes
+ * Quality tiers improve:
+ * Melee Weapons: damage, deflect
+ * Ranged Weapons: damage, range
+ * Armour: absorb, deflect
+ * Combat-related bonuses should be calculated in a separate module (e.g. "Combat")
+ * Armour quality tiers:
+ * Padded: from 0 to 3
+ * Mail: from 0 to 5
+ * Plate: from 1 to 5
+ * Fullplate: from 2 to 5
  */
-class EquipmentSet
+enum class WeaponType : char
 {
-public:
-    void CalculateBonuses();
-    const EquipmentBonuses& GetBonuses() const
-    {
-        return _bonuses;
-    }
+    SWORD = 'J',
+    AXE = 'A',
+    MACE = 'M',
+    SPEAR = 'S',
+    SHIELD = 'D'
+};
 
-private:
-    EquipmentBonuses _bonuses;
-    std::pair<bool, Weapon> _mainhand;
-    std::pair<bool, Weapon> _offhand;
-    std::pair<bool, Armour> _head;
-    std::pair<bool, Armour> _neck;
-    std::pair<bool, Armour> _torso;
-    std::pair<bool, Armour> _arms;
-    std::pair<bool, Armour> _hands;
-    std::pair<bool, Armour> _waist;
-    std::pair<bool, Armour> _legs;
-    std::pair<bool, Armour> _feet;
-    std::pair<bool, Mount> _mount;
+enum class RangedType : char
+{
+    BOW = 'B',
+    CROSSBOW = 'C',
+    SHOCKLANCE = 'L',
+    NONE = 'N'
+};
+
+enum class ArmourType : char
+{
+    PADDED = 'G',
+    MAIL = 'M',
+    PLATE = 'P',
+    FULLPLATE = 'F'
+};
+
+enum class WeaponStyle : char
+{
+    TWOHAND = 'T',
+    TWOWEAPON = '2',
+    SHIELD = 'S'
+};
+
+uint8_t CalculateReach(WeaponStyle style, WeaponType weapon);
+
+struct WeaponSet
+{
+    WeaponStyle style = WeaponStyle::TWOHAND;
+    WeaponType twohand = WeaponType::SPEAR;
+    uint8_t twohandTier = 0;
+    WeaponType mainhand;
+    uint8_t mainhandTier = 0;
+    WeaponType offhand;
+    uint8_t offhandTier = 0;
+    uint16_t twohandDurability = 0; // Durability maximum of 5000, drain 10 per tick in combat
+    uint16_t mainhandDurability = 0; // Tier 0 weapons have 0 durability but never degrade
+    uint16_t offhandDurability = 0;
+
+    uint16_t GetWeight() { return style == WeaponStyle::SHIELD ? 10 : 5; }
+};
+
+uint32_t GetCostScaling(uint32_t tier);
+
+struct Equipment
+{
+    WeaponSet weaponSet;
+    uint8_t rangedTier = 0;
+    RangedType rangedType = RangedType::NONE;
+    uint8_t armourTier = 0;
+    ArmourType armourType = ArmourType::MAIL;
+    uint16_t rangedDurability = 0;
+    uint16_t armourDurability = 0;
+    uint8_t mountTier = 0;
+
+    // xxx some thaumaturgy spells require at least some weight carried here
+    // Stuff like capacitors, volatiles, water, which power some of those spells
+    // I could see up to weight of 20 here, but no higher
+    uint8_t implements = 0;
+
+    uint8_t GetRange() const;
+    uint16_t GetWeight() const;
+    uint32_t RepairCost(char slot) const;
+    void DeathReset();
+    uint32_t PKLoot(Loot& loot) const;
 };

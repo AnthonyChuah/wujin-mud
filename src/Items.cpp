@@ -54,3 +54,25 @@ void Loot::GainLoot(unsigned tier, uint16_t qty)
         loot[i] -= canEvict[i];
     loot[tier] += overflowQty;
 }
+
+// Returning 0 means impossible to upgrade
+uint32_t Loot::UpgradeLootCapacityCost()
+{
+    uint16_t currentTier = maxloot / 2000 - 1;
+    switch (currentTier)
+    {
+    case 0:
+        return 5000;
+    case 1:
+        return 10000;
+    case 2:
+        return 20000;
+    case 3:
+        return 35000;
+    case 4:
+        return 50000;
+    default:
+        break;
+    }
+    return 0;
+}
