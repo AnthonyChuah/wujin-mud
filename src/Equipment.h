@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Loot.h"
+#include "Items.h"
 
 #include <cstdint>
 
@@ -64,13 +64,15 @@ struct WeaponSet
     uint16_t mainhandDurability = 0; // Tier 0 weapons have 0 durability but never degrade
     uint16_t offhandDurability = 0;
 
-    uint16_t GetWeight() { return style == WeaponStyle::SHIELD ? 10 : 5; }
+    uint16_t GetWeight() const { return style == WeaponStyle::SHIELD ? 10 : 5; }
 };
 
 uint32_t GetCostScaling(uint32_t tier);
 
 struct Equipment
 {
+    static constexpr uint16_t maxDurability = 5000;
+
     WeaponSet weaponSet;
     uint8_t rangedTier = 0;
     RangedType rangedType = RangedType::NONE;
@@ -90,4 +92,8 @@ struct Equipment
     uint32_t RepairCost(char slot) const;
     void DeathReset();
     uint32_t PKLoot(Loot& loot) const;
+
+    static uint32_t Valuation(uint8_t tier, char slot); // for weapons
+    static uint32_t Valuation(uint8_t tier, RangedType type); // ranged weapons
+    static uint32_t Valuation(uint8_t tier, ArmourType type); // armour
 };

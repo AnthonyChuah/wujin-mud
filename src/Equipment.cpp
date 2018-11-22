@@ -1,5 +1,6 @@
 #include "Equipment.h"
 
+#include <cassert>
 #include <cstdio>
 
 namespace
@@ -29,16 +30,25 @@ uint32_t GetCostMultiplier(ArmourType type)
         return 3;
     else if (type == ArmourType::PLATE)
         return 6;
-    else if (type == ArmourType::FULLPLATE)
-        return 9;
+    return 9; // FULLPLATE
 }
 
 }
 
 uint8_t CalculateReach(WeaponStyle style, WeaponType weapon)
 {
-    // xxx implement reach system
-    // Longest to shortest: 2h spear, 2h sword/axe/mace, 1h sword/axe/mace, 1h shield
+    if (style == WeaponStyle::TWOHAND)
+    {
+        if (weapon == WeaponType::SPEAR)
+            return 4;
+        return 3;
+    }
+    else
+    {
+        if (weapon != WeaponType::SHIELD)
+            return 2;
+        return 1;
+    }
 }
 
 uint32_t GetCostScaling(uint32_t tier)
@@ -83,8 +93,8 @@ uint16_t Equipment::GetWeight() const
 
 uint8_t Equipment::GetRange() const
 {
-    // xxx implement ranged weapon range
-    // bow > crossbow == shocklance, quality tier gives more range, Tier-5 crossbow range == Tier-0 bow range
+    constexpr uint8_t baseRange = 15;
+    return baseRange + rangedTier; // apply strength bonus from Combat module
 }
 
 /** 'T' two-hand, 'M' main-hand, 'O' off-hand, 'A' armour, 'R' ranged
@@ -92,9 +102,8 @@ uint8_t Equipment::GetRange() const
  */
 uint32_t Equipment::RepairCost(char slot) const
 {
-    static constexpr uint16_t maxDurability = 5000;
-    uint32_t cost;
     uint16_t toRepair; // durability units
+    uint32_t cost;
     uint32_t tier;
     switch (slot)
     {
@@ -128,7 +137,7 @@ uint32_t Equipment::RepairCost(char slot) const
     case 'A':
         tier = armourTier;
         toRepair = maxDurability- armourDurability;
-        cost = GetCostScaling(tier) * toRepair * costMultArmour;
+        cost = GetCostScaling(tier) * toRepair * GetCostMultiplier(armourType);
         return cost;
     case 'R':
         tier = rangedTier;
@@ -162,4 +171,24 @@ uint32_t Equipment::PKLoot(Loot& loot) const
     // xxx implement: when player kills victim player, victim's equipment quality determines loot
     // Equipment tier 0 gives 0 loot, tier 1 gives 1 loot... affected by type multipliers
     // Player-killing also gives you all the money they were holding
+    (void) loot;
+    return 0;
+}
+
+uint32_t Equipment::Valuation(uint8_t tier, char slot)
+{
+    if (slot == 'T')
+        return costMultTwohand * buyMultiplier * maxDurability * GetCostScaling(tier);
+    return costMultWeapon * buyMultiplier * maxDurability * GetCostScaling(tier);
+    // else off-hand 'O' or main-hand 'M', both same prices
+}
+
+uint32_t Equipment::Valuation(uint8_t tier, ArmourType type)
+{
+    return GetCostMultiplier(type) * GetCostScaling(tier) * maxDurability * buyMultiplier;
+}
+
+uint32_t Equipment::Valuation(uint8_t tier, RangedType type)
+{
+    return GetCostMultiplier(type) * GetCostScaling(tier) * maxDurability * buyMultiplier;
 }

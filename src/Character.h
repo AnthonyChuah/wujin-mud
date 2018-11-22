@@ -68,7 +68,7 @@ private:
     Attributes _attr;
     Score _score;
     Items _items;
-    EquipmentSet _equipment;
+    Equipment _equipment;
     Location _location = {{196, 128}, {0, 0}};
 
     // Expand these out into all transient scores
