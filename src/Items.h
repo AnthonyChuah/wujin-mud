@@ -5,9 +5,10 @@
 struct Loot
 {
     uint16_t loot[5] = {0};
-    uint16_t maxloot = 5000;
+    uint16_t maxloot = 2000; // Upgradeable to 12000 max
     uint32_t GetTotalLootValue() const;
     void GainLoot(unsigned tier, uint16_t qty);
+    uint32_t UpgradeLootCapacityCost();
 };
 
 struct Items
