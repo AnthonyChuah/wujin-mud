@@ -85,15 +85,21 @@ struct Equipment
     // xxx some thaumaturgy spells require at least some weight carried here
     // Stuff like capacitors, volatiles, water, which power some of those spells
     // I could see up to weight of 20 here, but no higher
+    // Players free to change this level as they want
     uint8_t implements = 0;
 
     uint8_t GetRange() const;
     uint16_t GetWeight() const;
     uint32_t RepairCost(char slot) const;
+    bool Repair(char slot);
     void DeathReset();
     uint32_t PKLoot(Loot& loot) const;
+
+    // xxx players can switch weapon styles in camps
+    uint32_t SwitchWeaponStyle(WeaponStyle style); // return sale price of obsolete weapons
 
     static uint32_t Valuation(uint8_t tier, char slot); // for weapons
     static uint32_t Valuation(uint8_t tier, RangedType type); // ranged weapons
     static uint32_t Valuation(uint8_t tier, ArmourType type); // armour
+    static bool ExistArmour(uint8_t tier, ArmourType type);
 };

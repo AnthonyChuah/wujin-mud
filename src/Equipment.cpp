@@ -120,7 +120,7 @@ uint32_t Equipment::RepairCost(char slot) const
         if (weaponSet.style != WeaponStyle::TWOHAND)
         {
             tier = weaponSet.mainhandTier;
-            toRepair = maxDurability- weaponSet.mainhandDurability;
+            toRepair = maxDurability - weaponSet.mainhandDurability;
             cost = GetCostScaling(tier) * toRepair * costMultWeapon;
             return cost;
         }
@@ -129,19 +129,19 @@ uint32_t Equipment::RepairCost(char slot) const
         if (weaponSet.style != WeaponStyle::TWOHAND)
         {
             tier = weaponSet.offhandTier;
-            toRepair = maxDurability- weaponSet.offhandDurability;
+            toRepair = maxDurability - weaponSet.offhandDurability;
             cost = GetCostScaling(tier) * toRepair * costMultWeapon;
             return cost;
         }
         break;
     case 'A':
         tier = armourTier;
-        toRepair = maxDurability- armourDurability;
+        toRepair = maxDurability - armourDurability;
         cost = GetCostScaling(tier) * toRepair * GetCostMultiplier(armourType);
         return cost;
     case 'R':
         tier = rangedTier;
-        toRepair = maxDurability- rangedDurability;
+        toRepair = maxDurability - rangedDurability;
         cost = GetCostScaling(tier) * toRepair * GetCostMultiplier(rangedType);
         return cost;
     default:
@@ -149,6 +149,43 @@ uint32_t Equipment::RepairCost(char slot) const
     }
     return 0;
 };
+
+bool Equipment::Repair(char slot)
+{
+    switch (slot)
+    {
+    case 'T':
+        if (weaponSet.style == WeaponStyle::TWOHAND)
+        {
+            weaponSet.twohandDurability = maxDurability;
+            return true;
+        }
+        break;
+    case 'M':
+        if (weaponSet.style != WeaponStyle::TWOHAND)
+        {
+            weaponSet.mainhandDurability = maxDurability;
+            return true;
+        }
+        break;
+    case 'O':
+        if (weaponSet.style != WeaponStyle::TWOHAND)
+        {
+            weaponSet.offhandDurability = maxDurability;
+            return true;
+        }
+        break;
+    case 'A':
+        armourDurability = maxDurability;
+        return true;
+    case 'R':
+        rangedDurability = maxDurability;
+        return true;
+    default:
+        assert(false && "Repair got an invalid input");
+    }
+    return false;
+}
 
 void Equipment::DeathReset()
 {
@@ -175,6 +212,49 @@ uint32_t Equipment::PKLoot(Loot& loot) const
     return 0;
 }
 
+uint32_t Equipment::SwitchWeaponStyle(WeaponStyle style)
+{
+    WeaponStyle currentStyle = weaponSet.style;
+    if (style == currentStyle)
+        return 0; // change nothing, and return 0 money for the non-existent change
+    if (style == WeaponStyle::TWOWEAPON && currentStyle == WeaponStyle::SHIELD)
+    {
+        uint32_t sale = Valuation(weaponSet.offhandTier, 'O') / buyMultiplier;
+        weaponSet.offhandTier = 0;
+        weaponSet.offhandDurability = 0;
+        weaponSet.style = style;
+        return sale;
+    } // Shield --> TwoWeapon
+    else if (style == WeaponStyle::SHIELD && currentStyle == WeaponStyle::TWOWEAPON)
+    {
+        uint32_t sale = Valuation(weaponSet.offhandTier, 'O') / buyMultiplier;
+        weaponSet.offhandTier = 0;
+        weaponSet.offhandDurability = 0;
+        weaponSet.style = style;
+        return sale;
+    } // TwoWeapon --> Shield
+    else if (style == WeaponStyle::TWOHAND)
+    {
+        uint32_t saleM = Valuation(weaponSet.mainhandTier, 'M') / buyMultiplier;
+        uint32_t saleO = Valuation(weaponSet.offhandTier, 'O') / buyMultiplier;
+        weaponSet.mainhandTier = 0; weaponSet.offhandTier = 0;
+        weaponSet.mainhandDurability = 0; weaponSet.offhandDurability = 0;
+        weaponSet.style = style;
+        return saleM + saleO;
+    } // TwoWeapon or Shield --> TwoHander
+    else
+    {
+        uint32_t saleT = Valuation(weaponSet.twohandTier, 'T') / buyMultiplier;
+        weaponSet.twohandDurability = 0;
+        weaponSet.twohandTier = 0;
+        weaponSet.style = style;
+        return saleT;
+    } // TwoHander --> TwoWeapon or Shield
+    // All possible state transitions covered
+    assert(false && "Equipment::SwitchWeaponStyle reached an impossible case");
+    return 0;
+}
+
 uint32_t Equipment::Valuation(uint8_t tier, char slot)
 {
     if (slot == 'T')
@@ -191,4 +271,15 @@ uint32_t Equipment::Valuation(uint8_t tier, ArmourType type)
 uint32_t Equipment::Valuation(uint8_t tier, RangedType type)
 {
     return GetCostMultiplier(type) * GetCostScaling(tier) * maxDurability * buyMultiplier;
+}
+
+bool Equipment::ExistArmour(uint8_t tier, ArmourType type)
+{
+    if (type == ArmourType::PADDED)
+        return tier <= 3 ? true : false;
+    else if (type == ArmourType::PLATE)
+        return tier >= 1 ? true : false;
+    else if (type == ArmourType::FULLPLATE)
+        return tier >= 2 ? true : false;
+    return true;
 }
