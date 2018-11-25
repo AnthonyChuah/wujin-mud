@@ -60,18 +60,44 @@ struct Location
 
 class Character;
 
+enum class ZoneType : char
+{
+    CAPITAL = 'X',
+    CITY = 'C',
+    FORT = 'F',
+    CAMP = 'E',
+    ROAD = 'R',
+    WILDERNESS = 'W',
+    STRONGHOLD = 'S'
+};
+
+enum class Terrain : char
+{
+    CITY = 'C',
+    CAMP = 'E',
+    ROAD = 'R',
+    PLAIN = 'P',
+    TUNDRA = 'T',
+    DESERT = 'D',
+    WET = 'W',
+    FOREST = 'F',
+    JUNGLE = 'J',
+    MOUNTAIN = 'M'
+};
+
+uint8_t GetTerrainVisibility(Terrain terrain);
+
 struct Zone
 {
-    Zone(const std::string& n, const std::string& desc, Coordinates c)
-        : name(n), description(desc), coord(c)
+    Zone(const std::string& n, const std::string& desc, Coordinates c, ZoneType ty, Terrain ter)
+        : name(n), description(desc), coord(c), type(ty), terrain(ter)
     {}
 
     std::string name;
     std::string description;
     Coordinates coord;
-
-    // terrain type
-    // zone type (city, fort, camp)
+    ZoneType type;
+    Terrain terrain;
 
     // std::vector<Monster> _monsters;
     std::set<Character*> _characters; // World is responsible for managing these pointers

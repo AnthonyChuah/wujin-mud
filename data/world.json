@@ -1,12 +1,23 @@
 {
-    "196 128":
+    "196 48":
     {
         "name": "Fort Victory",
-        "description": "Placeholder description"
+        "description": "Placeholder description",
+        "zonetype": "F",
+        "terrain": "C"
     },
-    "196 127":
+    "196 47":
     {
         "name": "Victory Road",
         "description": "Placeholder description"
+        "zonetype": "R",
+        "terrain": "R",
+    },
+    "196 46":
+    {
+        "name": "Victory Forward Camp",
+        "description": "Placeholder description"
+        "zonetype": "E",
+        "terrain": "E"
     }
 }

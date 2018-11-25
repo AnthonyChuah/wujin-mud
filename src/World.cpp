@@ -120,6 +120,30 @@ std::string Location::PrettyPrint() const
     return print;
 }
 
+uint8_t GetTerrainVisibility(Terrain terrain)
+{
+    switch (terrain)
+    {
+    case Terrain::ROAD:
+        return 32;
+    case Terrain::PLAIN:
+    case Terrain::TUNDRA:
+    case Terrain::DESERT:
+        return 30;
+    case Terrain::WET:
+    case Terrain::CAMP:
+        return 26;
+    case Terrain::CITY:
+        return 24;
+    case Terrain::FOREST:
+    case Terrain::MOUNTAIN:
+        return 20;
+    case Terrain::JUNGLE:
+        return 16;
+    }
+    return 32; // not reachable, silence compiler warning
+}
+
 std::string Zone::PrettyPrint() const
 {
     std::string print = name;
@@ -228,9 +252,7 @@ Coordinates GetCoordinatesFromString(const std::string& str, char delim)
 World::World(const std::string& file, Game& game)
     : _game(game)
 {
-    bool success = false;
     rapidjson::Document dom;
-
     std::string fileName = std::string("../data/") + file;
     FILE* f = fopen(fileName.c_str(), "rb");
     if (f)
@@ -238,24 +260,8 @@ World::World(const std::string& file, Game& game)
         char buffer[65536];
         rapidjson::FileReadStream jsonStream(f, buffer, sizeof(buffer));
         dom.ParseStream(jsonStream);
-        if (!CheckDomValid(dom))
-            printf("Invalid DOM in world data file %s", file.c_str());
-        else
-            success = true;
-    }
-
-    if (success)
         PopulateZones(dom);
-}
-
-bool World::CheckDomValid(const rapidjson::Document& dom) const
-{
-    if (!dom.HasMember("196 128")) return false;
-    if (!dom["196 128"].HasMember("name")) return false;
-    if (!dom["196 128"].HasMember("description")) return false;
-    if (!dom["196 128"]["name"].IsString()) return false;
-    if (!dom["196 128"]["description"].IsString()) return false;
-    return true;
+    }
 }
 
 void World::PopulateZones(const rapidjson::Document& dom)
@@ -266,9 +272,12 @@ void World::PopulateZones(const rapidjson::Document& dom)
         Coordinates coord = GetCoordinatesFromString(coordinates, ' ');
         std::string name = member.value["name"].GetString();
         std::string description = member.value["description"].GetString();
+        auto type = ZoneType(member.value["zonetype"].GetString()[0]);
+        auto terrain = Terrain(member.value["terrain"].GetString()[0]);
+
         _zones.emplace(std::piecewise_construct,
                        std::forward_as_tuple(coord),
-                       std::forward_as_tuple(name, description, coord));
+                       std::forward_as_tuple(name, description, coord, type, terrain));
         printf("Loaded Zone from file: %hhu, %hhu: %s\n", coord.x, coord.y, name.c_str());
     }
 }
