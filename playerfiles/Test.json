@@ -4,9 +4,9 @@
     "location":
     {
 	"world_x": 196,
-	"world_y": 128,
+	"world_y": 48,
 	"zone_x": 0,
 	"zone_y": 0
-    }
+    },
     "attributes": [10, 10, 10, 10, 10, 10]
 }

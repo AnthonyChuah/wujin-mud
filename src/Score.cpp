@@ -59,5 +59,5 @@ void Score::Regen(uint16_t hpMult, uint16_t mpMult, uint16_t staMult)
     sta += staRegen;
     if (sta > maxsta) sta = maxsta;
 
-    printf("Score::Regen brought character hp/mp/sta to %hu/%hu/%hu", hp, mp, sta);
+    printf("Score::Regen brought character hp/mp/sta to %hu/%hu/%hu\n", hp, mp, sta);
 }

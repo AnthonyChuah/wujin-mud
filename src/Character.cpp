@@ -5,6 +5,7 @@
 #include "CommandParser.h"
 #include "Game.h"
 #include "Items.h"
+#include "Trade.h"
 #include "Utils.h"
 
 #include <algorithm>
@@ -98,16 +99,6 @@ void Character::PeriodicEffects()
 {
     printf("Character %s processing periodic effect (buff drain, debuff damage)", GetName().c_str());
     // xxx implement: remember to also force the zone to apply periodics onto monsters
-}
-
-void Character::ConsumeSupplies()
-{
-    uint16_t toConsume = 1;
-    // xxx Some buffs may consume more supplies when toggled
-    if (_items.supplies < toConsume)
-        _items.supplies = 0;
-    else
-        _items.supplies -= toConsume;
 }
 
 bool Character::HasConqueredZone(Coordinates zone) const
@@ -253,7 +244,53 @@ void Character::DoActivity(const std::vector<std::string>& tokens)
         SetRest(true);
     else if (tokens[0] == "stand" || tokens[0] == "st")
         SetRest(false);
+    else if (tokens[0] == "buy")
+        Buy(tokens);
+    else if (tokens[0] == "implements")
+        SetImplements(tokens);
     // xxx implement other standard activities
+}
+
+void Character::Buy(const std::vector<std::string>& tokens)
+{
+    // "buy supplies 42", "buy mainhand sword 3", "buy twohand axe 2", "buy offhand shield 1",
+    // "buy armour mail 2", "buy ammo 42"
+    if (tokens.size() == 1)
+    {
+        _output->append("You need to buy something! e.g. 'buy supplies 42'.\n");
+        return;
+    }
+
+    if (tokens[1] == "supplies")
+    {
+        if (tokens.size() == 2)
+        {
+            _output->append("Please indicate the quantity of supplies to buy: e.g. 'buy supplies 42'.");
+            return;
+        }
+        uint16_t suppliesQty = std::stoi(tokens[2]);
+        printf("Character is trying to buy %u supplies", suppliesQty);
+        Trade::BuySupplies(*this, suppliesQty);
+    }
+
+    if (tokens[1] == "ammo")
+    {
+        if (tokens.size() == 2 || !HasOnlyDigits(tokens[2]))
+        {
+            _output->append("Please indicate the quantity of ammo to buy: e.g. 'buy ammo 42'.");
+            return;
+        }
+        uint16_t ammoQty = std::stoi(tokens[2]);
+        printf("Character is trying to buy %u ammo", ammoQty);
+        Trade::BuyAmmo(*this, ammoQty);
+    }
+
+    // xxx implement other purchases
+}
+
+void Character::SetImplements(const std::vector<std::string>& tokens)
+{
+    (void) tokens;
 }
 
 void Character::DoSkill(const std::vector<std::string>& tokens)
@@ -308,4 +345,16 @@ void Character::PrintBriefLook()
     _output->append("\n[Zone] (Location): ");
     _output->append(_location.PrettyPrint());
     // Also need to see monsters nearby
+}
+
+void Character::ConsumeSupplies()
+{
+    uint16_t toConsume = 1;
+    // xxx Some buffs may consume more supplies when toggled
+    if (_items.supplies < toConsume)
+        _items.supplies = 0;
+    else
+        _items.supplies -= toConsume;
+
+    printf("Character consumed supplies, %u left", _items.supplies);
 }

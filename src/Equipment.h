@@ -87,13 +87,14 @@ struct Equipment
     // I could see up to weight of 20 here, but no higher
     // Players free to change this level as they want
     uint8_t implements = 0;
+    uint8_t encumbrance = 0;
 
     uint8_t GetRange() const;
-    uint16_t GetWeight() const;
     uint32_t RepairCost(char slot) const;
     bool Repair(char slot);
     void DeathReset();
     uint32_t PKLoot(Loot& loot) const;
+    void RecalcEncumbrance();
 
     // xxx players can switch weapon styles in camps
     uint32_t SwitchWeaponStyle(WeaponStyle style); // return sale price of obsolete weapons

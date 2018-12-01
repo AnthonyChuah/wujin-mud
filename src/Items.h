@@ -13,6 +13,9 @@ struct Loot
 
 struct Items
 {
+    uint16_t maxsupplies = 2000;
+    uint16_t maxammo = 2000;
+
     uint16_t supplies;
     uint16_t ammo;
     uint32_t money; // remember to handle under/overflow

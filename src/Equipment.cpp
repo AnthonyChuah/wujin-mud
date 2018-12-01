@@ -1,4 +1,5 @@
 #include "Equipment.h"
+#include "Utils.h"
 
 #include <cassert>
 #include <cstdio>
@@ -69,9 +70,9 @@ uint32_t GetCostScaling(uint32_t tier)
     return 0;
 };
 
-uint16_t Equipment::GetWeight() const
+void Equipment::RecalcEncumbrance()
 {
-    uint16_t armourWeight;
+    uint8_t armourWeight;
     switch (armourType)
     {
     case ArmourType::PADDED:
@@ -87,8 +88,9 @@ uint16_t Equipment::GetWeight() const
         armourWeight = 60;
         break;
     }
-    uint16_t rangedWeight = rangedType == RangedType::BOW ? 4 : 10; // includes quiver/arrow weight
-    return armourWeight + rangedWeight + implements + weaponSet.GetWeight();
+    uint8_t rangedWeight = rangedType == RangedType::BOW ? 5 : 10;
+    encumbrance = armourWeight + rangedWeight + implements + weaponSet.GetWeight();
+    printf("Equipment::RecalcEncumbrance set encumbrance to %u", encumbrance);
 }
 
 uint8_t Equipment::GetRange() const
@@ -215,6 +217,9 @@ uint32_t Equipment::PKLoot(Loot& loot) const
 uint32_t Equipment::SwitchWeaponStyle(WeaponStyle style)
 {
     WeaponStyle currentStyle = weaponSet.style;
+    printf("Equipment::SwitchWeaponStyle from %c to %c",
+           CastToUnderlying(currentStyle), CastToUnderlying(style));
+
     if (style == currentStyle)
         return 0; // change nothing, and return 0 money for the non-existent change
     if (style == WeaponStyle::TWOWEAPON && currentStyle == WeaponStyle::SHIELD)
@@ -251,7 +256,9 @@ uint32_t Equipment::SwitchWeaponStyle(WeaponStyle style)
         return saleT;
     } // TwoHander --> TwoWeapon or Shield
     // All possible state transitions covered
+
     assert(false && "Equipment::SwitchWeaponStyle reached an impossible case");
+    RecalcEncumbrance();
     return 0;
 }
 

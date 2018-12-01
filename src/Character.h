@@ -12,11 +12,13 @@
 #include <vector>
 
 class CharacterFileLoader;
+struct Trade;
 
 class Character
 {
 public:
     friend class CharacterFileLoader;
+    friend class Trade;
 
     Character(std::string* output, World* world, const std::string& name, size_t id);
     Character(std::string* output, World* world, const CharacterFileLoader& loader, size_t id);
@@ -53,6 +55,8 @@ private:
     void DoCombatAction(const std::vector<std::string>& tokens);
     void DoCombatSkill(const std::vector<std::string>& tokens);
     void DoCombatSpell(const std::vector<std::string>& tokens);
+    void Buy(const std::vector<std::string>& tokens);
+    void SetImplements(const std::vector<std::string>& tokens);
 
     void ToggleCreep();
     void SetRest(bool resting);

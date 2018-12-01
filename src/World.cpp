@@ -125,21 +125,21 @@ uint8_t GetTerrainVisibility(Terrain terrain)
     switch (terrain)
     {
     case Terrain::ROAD:
-        return 32;
+        return 40;
     case Terrain::PLAIN:
     case Terrain::TUNDRA:
     case Terrain::DESERT:
-        return 30;
+        return 34;
     case Terrain::WET:
     case Terrain::CAMP:
-        return 26;
+        return 30;
     case Terrain::CITY:
-        return 24;
+        return 28;
     case Terrain::FOREST:
     case Terrain::MOUNTAIN:
-        return 20;
+        return 24;
     case Terrain::JUNGLE:
-        return 16;
+        return 20;
     }
     return 32; // not reachable, silence compiler warning
 }

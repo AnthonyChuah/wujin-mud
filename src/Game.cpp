@@ -150,7 +150,7 @@ void Game::ExecuteGameCycle()
 
 void Game::Tick()
 {
-    printf("Game tick has happened!");
+    printf("Game tick has happened!\n");
     for (auto& pairit : _characters)
     {
         pairit.second.Regen();
