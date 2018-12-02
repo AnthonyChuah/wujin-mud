@@ -50,7 +50,7 @@ enum class Direction : uint8_t
 
 struct Location
 {
-    Coordinates major;
+    Coordinates major = {196, 48};
     Coordinates minor;
 
     Direction WhichEdge() const;

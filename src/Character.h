@@ -4,6 +4,7 @@
 #include "Creature.h"
 #include "Equipment.h"
 #include "Items.h"
+#include "Progress.h"
 #include "Score.h"
 #include "World.h"
 
@@ -27,6 +28,7 @@ public:
     void ExecuteCommand(const std::string& command);
     void Regen();
     void PeriodicEffects();
+    void InitializeScores();
 
     const std::string& GetName() const { return _name; }
     void SetName(const std::string& name) { _name = name; }
@@ -68,8 +70,10 @@ private:
     // Consider having a Zone ptr instead of indirectly looking up through World
 
     std::string _name;
+    std::string _pwd;
     size_t _id;
     Attributes _attr;
+    Progress _progress;
     Score _score;
     Items _items;
     Equipment _equipment;

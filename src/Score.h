@@ -4,12 +4,12 @@
 
 struct Score
 {
-    uint16_t hp;
-    uint16_t maxhp;
-    uint16_t mp;
-    uint16_t maxmp;
-    uint16_t sta;
-    uint16_t maxsta;
+    uint16_t hp = 500;
+    uint16_t maxhp = 500;
+    uint16_t mp = 500;
+    uint16_t maxmp = 500;
+    uint16_t sta = 500;
+    uint16_t maxsta = 500;
 
     void RecalculateMaxes(uint8_t level, uint8_t constitution, uint8_t willpower);
     void Regen(uint16_t hpMult, uint16_t mpMult, uint16_t staMult);

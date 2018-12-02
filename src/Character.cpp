@@ -33,6 +33,7 @@ Character::Character(std::string* output, World* world, const CharacterFileLoade
     _equipment = loader._character._equipment;
     _location = loader._character._location;
     _speed = loader._character._speed;
+    _pwd = loader._character._pwd;
     printf("Character with name %s has location loaded: (%hhu, %hhu) (%hhu, %hhu)\n",
            _name.c_str(), _location.major.x, _location.major.y, _location.minor.x, _location.minor.y);
 }
@@ -99,6 +100,12 @@ void Character::PeriodicEffects()
 {
     printf("Character %s processing periodic effect (buff drain, debuff damage)", GetName().c_str());
     // xxx implement: remember to also force the zone to apply periodics onto monsters
+}
+
+void Character::InitializeScores()
+{
+    _score.RecalculateMaxes(_progress.level, _attr.constitution, _attr.willpower);
+    _score.Regen(50, 50, 50); // restores to max
 }
 
 bool Character::HasConqueredZone(Coordinates zone) const

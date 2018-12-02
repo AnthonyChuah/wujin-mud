@@ -8,10 +8,71 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
-void CharacterFileLoader::SaveCharacterToFile(const Character& character)
+CharacterFileLoader CharacterFileLoader::SaveCharacterToFile(const Character& character)
 {
-    printf("Saving %s to file!", character.GetName().c_str());
-    (void) character; // xxx implement
+    printf("Saving player file for %s!", character.GetName().c_str());
+    auto loader = CharacterFileLoader(character); // ctor saves to file
+    return loader;
+}
+
+CharacterFileLoader CharacterFileLoader::CreateNewCharacterFile(const char* name, const std::string& pwd,
+                                                                Attributes attr)
+{
+    printf("Writing new player file for %s!", name);
+    Character character;
+    character._attr = attr;
+    character._pwd = pwd;
+    character._name = name;
+    character.InitializeScores();
+    auto loader = CharacterFileLoader(character); // copies, but character creation should be infrequent
+    return loader;
+}
+
+CharacterFileLoader::CharacterFileLoader(const Character& character) : _character(character)
+{
+    rapidjson::StringBuffer strbuff;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(strbuff);
+
+    writer.StartObject();
+
+    writer.Key("name");
+    writer.String(_character._name.c_str());
+    writer.Key("password");
+    writer.String(_character._pwd.c_str());
+
+    writer.Key("location");
+    writer.StartObject();
+    writer.Key("world_x");
+    writer.Uint(_character._location.major.x);
+    writer.Key("world_y");
+    writer.Uint(_character._location.major.y);
+    writer.Key("zone_x");
+    writer.Uint(_character._location.minor.x);
+    writer.Key("zone_y");
+    writer.Uint(_character._location.minor.y);
+    writer.EndObject();
+
+    writer.Key("attributes");
+    writer.StartArray();
+    writer.Uint(_character._attr.strength);
+    writer.Uint(_character._attr.dexterity);
+    writer.Uint(_character._attr.constitution);
+    writer.Uint(_character._attr.intelligence);
+    writer.Uint(_character._attr.willpower);
+    writer.Uint(_character._attr.perception);
+    writer.EndArray();
+
+    writer.EndObject();
+
+    std::string fileName = std::string("../playerfiles/") + _character._name + ".json";
+    std::ofstream f(fileName.c_str());
+    f << strbuff.GetString();
+
+    if (f.good())
+        printf("Successfully wrote newly created character file at %s", fileName.c_str());
+    else
+        printf("Failed to write newly created character file to %s", fileName.c_str());
+    f.close();
 }
 
 CharacterFileLoader::CharacterFileLoader(const char* name, const std::string& pwd) :
@@ -47,60 +108,11 @@ CharacterFileLoader::CharacterFileLoader(const char* name, const std::string& pw
         _name.clear();
 }
 
-CharacterFileLoader::CharacterFileLoader(const char* name, const std::string& pwd, Attributes attr) :
-    _name(name)
-{
-    _character._attr = attr;
-
-    rapidjson::StringBuffer strbuff;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(strbuff);
-
-    writer.StartObject();
-
-    writer.Key("name");
-    writer.String(name);
-    writer.Key("password");
-    writer.String(pwd.c_str());
-
-    writer.Key("location");
-    writer.StartObject();
-    writer.Key("world_x");
-    writer.Uint(196);
-    writer.Key("world_y");
-    writer.Uint(196);
-    writer.Key("zone_x");
-    writer.Uint(196);
-    writer.Key("zone_y");
-    writer.Uint(196);
-    writer.EndObject();
-
-    writer.Key("attributes");
-    writer.StartArray();
-    writer.Uint(attr.strength);
-    writer.Uint(attr.dexterity);
-    writer.Uint(attr.constitution);
-    writer.Uint(attr.intelligence);
-    writer.Uint(attr.willpower);
-    writer.Uint(attr.perception);
-    writer.EndArray();
-
-    writer.EndObject();
-
-    std::string fileName = std::string("../playerfiles/") + name + ".json";
-    std::ofstream f(fileName.c_str());
-    f << strbuff.GetString();
-
-    if (f.good())
-        printf("Successfully wrote newly created character file at %s", fileName.c_str());
-    else
-        printf("Failed to write newly created character file to %s", fileName.c_str());
-    f.close();
-}
-
 void CharacterFileLoader::PopulateCharacterData(const rapidjson::Document& dom)
 {
     std::string name = dom["name"].GetString();
     _character.SetName(std::move(name));
+    _character._pwd = dom["password"].GetString();
 
     _character.SetLocation({
         uint8_t(dom["location"]["world_x"].GetInt()),

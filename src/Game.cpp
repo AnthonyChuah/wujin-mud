@@ -72,6 +72,7 @@ void Game::ExecuteGameCycle()
 {
     ++_elapsed;
     --_toTick;
+    --_toSave;
 
     /**
      * When a given user is removed, we must handle destruction in several places:
@@ -146,6 +147,12 @@ void Game::ExecuteGameCycle()
 
     for (auto& c : _connections)
         c.second->StartWrite(); // Flush all buffered messages to all connected clients
+
+    if (_toSave == 0)
+    {
+        SaveCharacters();
+        _toSave = CYCLES_PER_SAVE;
+    }
 }
 
 void Game::Tick()
@@ -158,14 +165,15 @@ void Game::Tick()
     }
 }
 
+void Game::SaveCharacters() const
+{
+    printf("Game is saving %lu characters!\n", _characters.size());
+    for (const auto& pairit : _characters)
+        CharacterFileLoader::SaveCharacterToFile(pairit.second);
+}
+
 void Game::HandleCharacterLogin(TcpConnection* connection, const std::string& cmd)
 {
-    // connection->GetOutputBuffer() = "Feature coming soon! You attempted to LOGIN as ";
-    // connection->GetOutputBuffer().append(cmd);
-    // connection->StartWrite();
-
-    // cmd contains a string which is the name of the character he wants to login as
-    // Validate name (all letters no spaces)
     auto it = std::find_if(cmd.begin(), cmd.end(), [](char c)
                            {
                                return !isalpha(c);
@@ -253,14 +261,13 @@ void Game::HandleCharacterCreation(TcpConnection* connection, const std::string&
         connection->GetOutputBuffer().append(".\nWelcome to Fort Victory, where new adventurers begin!\n");
 
         // This ctor makes a new playerfile
-        auto loader = CharacterFileLoader(connection->GetLogin().c_str(),
-                                          connection->GetNewCharacterPassword(), attr);
+        auto loader = CharacterFileLoader::CreateNewCharacterFile(connection->GetLogin().c_str(),
+                                                                  connection->GetNewCharacterPassword(), attr);
 
         auto pairiter = _characters.emplace(std::piecewise_construct,
                                             std::forward_as_tuple(connection->GetId()),
                                             std::forward_as_tuple(&connection->GetOutputBuffer(),
                                                                   &_world, loader, connection->GetId()));
-        CharacterFileLoader::SaveCharacterToFile(pairiter.first->second);
 
         connection->AttachCharacter(&pairiter.first->second);
         connection->SetConnectState(ConnectState::PLAYING);
