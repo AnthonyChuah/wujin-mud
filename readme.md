@@ -26,7 +26,7 @@ Building this game requires:
 
 * GCC modern enough to support C++11
 * Boost
-* MUD server hosting (so players can connect to your IP)
+* Linux MUD server hosting (so players can connect to your IP)
 
 ## Acknowledgements
 
