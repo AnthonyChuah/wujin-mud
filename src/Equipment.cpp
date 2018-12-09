@@ -198,7 +198,6 @@ void Equipment::DeathReset()
     weaponSet.twohandDurability = 0;
     weaponSet.mainhandDurability = 0;
     weaponSet.offhandDurability = 0;
-    mountTier = 0;
     rangedTier = 0;
     armourTier = 0;
     rangedDurability = 0;

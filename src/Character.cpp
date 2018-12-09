@@ -22,18 +22,19 @@ bool HasOnlyDigits(const std::string& str)
                        });
 }
 
-Character::Character(std::string* output, World* world, const std::string& name, size_t id)
-    : _output(output), _world(world), _name(name), _id(id)
-{}
-
 Character::Character(std::string* output, World* world, const CharacterFileLoader& loader, size_t id)
     : _output(output), _world(world), _id(id)
 {
     _name = loader._character._name;
+    _pwd = loader._character._pwd;
+    _attr = loader._character._attr;
+    _progress = loader._character._progress;
+    _score = loader._character._score;
+    _items = loader._character._items;
+    _loot = loader._character._loot;
     _equipment = loader._character._equipment;
     _location = loader._character._location;
     _speed = loader._character._speed;
-    _pwd = loader._character._pwd;
     printf("Character with name %s has location loaded: (%hhu, %hhu) (%hhu, %hhu)\n",
            _name.c_str(), _location.major.x, _location.major.y, _location.minor.x, _location.minor.y);
 }
@@ -54,7 +55,7 @@ void Character::ExecuteCommand(const std::string& command)
     switch (type)
     {
     case ActionType::ADMIN:
-        DoAdmin(tokens); // Admin actions should ignore delays
+        DoAdmin(tokens);
         break;
     case ActionType::DIRECTION:
         DoMove(tokens);
