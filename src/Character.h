@@ -21,7 +21,6 @@ public:
     friend class CharacterFileLoader;
     friend class Trade;
 
-    Character(std::string* output, World* world, const std::string& name, size_t id);
     Character(std::string* output, World* world, const CharacterFileLoader& loader, size_t id);
     Character() = default;
 
@@ -32,9 +31,9 @@ public:
 
     const std::string& GetName() const { return _name; }
     void SetName(const std::string& name) { _name = name; }
-    void SetDelay(uint16_t delay) { _delay = delay; printf("Set delay to %hu\n", _delay); }
-    uint16_t GetDelay() const { return _delay; }
-    void DecrementDelay() { if (_delay > 0) --_delay; }
+    void SetDelay(uint16_t delay) { _score.delay = delay; printf("Set delay to %hu\n", _score.delay); }
+    uint16_t GetDelay() const { return _score.delay; }
+    void DecrementDelay() { if (_score.delay > 0) --_score.delay; }
     Location GetLocation() const { return _location; }
     void SetLocation(Location loc) { _location = loc; }
     const Zone& GetZone() const { return _world->GetZone(_location.major); }
@@ -67,20 +66,18 @@ private:
 
     std::string* _output = nullptr;
     World* _world = nullptr;
+    size_t _id;
     // Consider having a Zone ptr instead of indirectly looking up through World
 
     std::string _name;
     std::string _pwd;
-    size_t _id;
     Attributes _attr;
     Progress _progress;
     Score _score;
     Items _items;
+    Loot _loot;
     Equipment _equipment;
-    Location _location = {{196, 128}, {0, 0}};
-
-    // Expand these out into all transient scores
-    uint16_t _delay = 0;
+    Location _location; // default-ctor major coords 196, 48, minor coords random
 
     // Expand these out into all non-transient character attributes and skills
     uint8_t _speed = 8; // Speed should be perhaps tied to Level and active buffs/debuffs

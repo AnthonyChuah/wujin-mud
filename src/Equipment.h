@@ -74,13 +74,12 @@ struct Equipment
     static constexpr uint16_t maxDurability = 5000;
 
     WeaponSet weaponSet;
-    uint8_t rangedTier = 0;
     RangedType rangedType = RangedType::NONE;
-    uint8_t armourTier = 0;
+    uint8_t rangedTier = 0;
     ArmourType armourType = ArmourType::MAIL;
+    uint8_t armourTier = 0;
     uint16_t rangedDurability = 0;
     uint16_t armourDurability = 0;
-    uint8_t mountTier = 0;
 
     // xxx some thaumaturgy spells require at least some weight carried here
     // Stuff like capacitors, volatiles, water, which power some of those spells

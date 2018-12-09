@@ -13,11 +13,11 @@ struct Loot
 
 struct Items
 {
-    uint16_t maxsupplies = 2000;
-    uint16_t maxammo = 2000;
+    uint16_t maxsupplies = 1000;
+    uint16_t maxammo = 1000;
 
-    uint16_t supplies;
-    uint16_t ammo;
-    uint32_t money; // remember to handle under/overflow
-    uint32_t banked;
+    uint16_t supplies = 1000;
+    uint16_t ammo = 0;
+    uint32_t money = 1000; // remember to handle under/overflow
+    uint32_t banked = 0;
 };
