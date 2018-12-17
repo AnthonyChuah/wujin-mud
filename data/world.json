@@ -2,14 +2,14 @@
     "196 48":
     {
         "name": "Fort Victory",
-        "description": "Fort Victory stands proudly here, a tall stone tower surrounded by a wooden palisade.\nIt overlooks the scene of a recent victory against the alien predators.\nPeople of all races congregate here, whether seeking refuge or glory.\nHere, you may replenish your supplies, buy weapons, and rest until your next venture.",
+        "description": "Fort Victory stands proudly here, a tall stone tower surrounded by a wooden palisade.\nIt overlooks the scene of a recent victory against the alien predators.\nPeople of all races congregate here, whether seeking refuge or glory.\nHere, you may replenish your supplies, buy weapons, and rest until your next venture.\nTo the north, a barren road leads to the Victory Forward Camp, where new heroes do battle\nagainst the fledgling Goblin stronghold built by the remains of the defeated Goblins.\nTo the south, a well-patrolled road leads to the bustling Redoubt City.\n",
         "zonetype": "F",
         "terrain": "C"
     },
     "196 47":
     {
         "name": "Victory Road",
-        "description": "Placeholder description",
+        "description": "This barren road is littered with the remnants of the defeated Goblin army.\nGoblin stragglers roam about in a daze, easy pickings for even the most inexperienced heroes.\n",
         "zonetype": "R",
         "terrain": "R"
     },

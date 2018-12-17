@@ -11,7 +11,7 @@
 
 CharacterFileLoader CharacterFileLoader::SaveCharacterToFile(const Character& character)
 {
-    printf("Saving player file for %s!", character.GetName().c_str());
+    printf("Saving player file for %s!\n", character.GetName().c_str());
     auto loader = CharacterFileLoader(character); // ctor saves to file
     return loader;
 }
@@ -19,7 +19,7 @@ CharacterFileLoader CharacterFileLoader::SaveCharacterToFile(const Character& ch
 CharacterFileLoader CharacterFileLoader::CreateNewCharacterFile(const char* name, const std::string& pwd,
                                                                 Attributes attr)
 {
-    printf("Writing new player file for %s!", name);
+    printf("Writing new player file for %s!\n", name);
     Character character;
     character._attr = attr;
     character._pwd = pwd;
@@ -168,9 +168,9 @@ CharacterFileLoader::CharacterFileLoader(const Character& character) : _characte
     f << strbuff.GetString();
 
     if (f.good())
-        printf("Successfully wrote newly created character file at %s", fileName.c_str());
+        printf("Successfully wrote character file at %s\n", fileName.c_str());
     else
-        printf("Failed to write newly created character file to %s", fileName.c_str());
+        printf("Failed to write character file to %s\n", fileName.c_str());
     f.close();
 }
 
@@ -272,7 +272,7 @@ void CharacterFileLoader::PopulateCharacterData(const rapidjson::Document& dom)
     _character._score.maxsta = dom["score"][5].GetInt();
     // Delay should always be 0 at login
 
-    printf("Loaded character %s from file!", name.c_str());
+    printf("Loaded character %s from file!\n", name.c_str());
 }
 
 bool CharacterFileLoader::CheckDomValid(const rapidjson::Document& dom) const

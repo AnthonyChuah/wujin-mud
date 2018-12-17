@@ -6,7 +6,9 @@ const std::vector<std::string> admin = {
     "quit",
     "sc", "score",
     "stats",
-    "i", "items"
+    "i", "items",
+    "l", "look",
+    "ex", "exits"
 };
 
 const std::vector<std::string> movement = {

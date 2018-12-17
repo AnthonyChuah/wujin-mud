@@ -99,7 +99,7 @@ void Character::Regen()
 
 void Character::PeriodicEffects()
 {
-    printf("Character %s processing periodic effect (buff drain, debuff damage)", GetName().c_str());
+    printf("Character %s processing periodic effect (buff drain, debuff damage)\n", GetName().c_str());
     // xxx implement: remember to also force the zone to apply periodics onto monsters
 }
 
@@ -119,9 +119,49 @@ void Character::DoAdmin(const std::vector<std::string>& tokens)
 {
     if (tokens[0] == "quit")
     {
+        CharacterFileLoader::SaveCharacterToFile(*this);
         _world->CharacterExitZone(_location.major, this);
         _output->append("Good-bye, see you again soon in the Age of Wujin!\n");
         _world->GetGame().DisconnectById(_id);
+    }
+    else if (tokens[0] == "l" || tokens[0] == "look")
+    {
+        const Zone& zone = _world->GetZone(_location.major);
+        PrintBriefLook();
+        _output->append(zone.description);
+    }
+    else if (tokens[0] == "ex" || tokens[0] == "exits")
+    {
+        _output->append("Exits to adjacent zones: [\n");
+        for (int i = -1; i <= 1; ++i)
+            for (int j = -1; j <= 1; ++j)
+            {
+                if (i == 0 && j == 0) continue;
+
+                Coordinates adjacent = _location.major;
+                adjacent.x += i;
+                adjacent.y += j;
+                if (_world->ExistZone(adjacent))
+                {
+                    std::string direction;
+                    if (j == -1)
+                        direction.append("north");
+                    else if (j == 1)
+                        direction.append("south");
+                    if (i == -1)
+                        direction.append("west");
+                    else if (i == 1)
+                        direction.append("east");
+
+                    const std::string& name = _world->GetZone(adjacent).name;
+                    _output->append("    ");
+                    _output->append(std::move(direction));
+                    _output->append(":");
+                    _output->append(name);
+                    _output->append("\n");
+                }
+            }
+        _output->append("]\n");
     }
 }
 
@@ -208,10 +248,10 @@ bool Character::Move(Direction direction)
         _location.minor.y = Clamp(ydest, 255, 0);
         printf("Character has moved within the zone to the spot (%hhu, %hhu)\n",
                _location.minor.x, _location.minor.y);
-        // Once implemented, give Character basic info in their new square
+        // xxx Once implemented, give Character basic info in their new square
         PrintBriefLook();
         SetDelay(DELAY_MOVE);
-        // Once implemented, trigger Monster Aggro in Character's Zone
+        // xxx Once implemented, trigger Monster Aggro in Character's Zone
     }
 
     return true;
@@ -229,10 +269,10 @@ bool Character::DoTravel(Direction direction)
         _output->append("You leave this zone and enter the zone to the ");
         _output->append(PrintDirection(direction));
         _output->append("...\n");
-        // Once implemented, trigger MonsterSpawn at new zone
-        // Once implemented, give Character basic information at their new zone
+        // xxx Once implemented, trigger MonsterSpawn at new zone
+        // xxx Once implemented, give Character basic information at their new zone
         PrintBriefLook();
-        // Once implemented, trigger Monster aggro upon Character's new location
+        // xxx Once implemented, trigger Monster aggro upon Character's new location
         SetDelay(DELAY_ZONETRAVEL);
         return true;
     }
@@ -352,7 +392,9 @@ void Character::PrintBriefLook()
     _output->append(zone.name);
     _output->append("\n[Zone] (Location): ");
     _output->append(_location.PrettyPrint());
+    _output->append("\n");
     // Also need to see monsters nearby
+    _output->append("\n");
 }
 
 void Character::ConsumeSupplies()
