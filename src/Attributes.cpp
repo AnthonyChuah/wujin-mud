@@ -48,3 +48,21 @@ bool ParseAttributes(const std::string& choice, Attributes& attrib)
 
     return true;
 }
+
+std::string Attributes::PrettyPrint() const
+{
+    std::string output("[");
+    output.append(std::to_string(strength));
+    output.append("str ");
+    output.append(std::to_string(dexterity));
+    output.append("dex ");
+    output.append(std::to_string(constitution));
+    output.append("con ");
+    output.append(std::to_string(intelligence));
+    output.append("int ");
+    output.append(std::to_string(willpower));
+    output.append("wil ");
+    output.append(std::to_string(perception));
+    output.append("per]");
+    return output;
+}

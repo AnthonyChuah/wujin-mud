@@ -61,3 +61,23 @@ void Score::Regen(uint16_t hpMult, uint16_t mpMult, uint16_t staMult)
 
     printf("Score::Regen brought character hp/mp/sta to %hu/%hu/%hu\n", hp, mp, sta);
 }
+
+std::string Score::PrettyPrint() const
+{
+    // [500/500 hp, 500/500 mp, 500/500 st]
+    std::string output("[");
+    output.append(std::to_string(hp));
+    output.append("/");
+    output.append(std::to_string(maxhp));
+    output.append(" hp, ");
+    output.append(std::to_string(mp));
+    output.append("/");
+    output.append(std::to_string(maxmp));
+    output.append(" mp, ");
+    output.append(std::to_string(sta));
+    output.append("/");
+    output.append(std::to_string(maxsta));
+    output.append(" st]\n");
+    // Add status effects here
+    return output;
+}

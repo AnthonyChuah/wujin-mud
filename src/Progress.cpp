@@ -21,7 +21,7 @@ bool Progress::GainExperience(uint32_t gain, Score& score, const Attributes& att
     if (level == maxLevel)
         return false;
     experience += gain;
-    if (experience > levelThresholds[level])
+    if (experience >= levelThresholds[level])
     {
         GainLevel(score, attr);
         return true;
@@ -34,4 +34,21 @@ void Progress::GainLevel(Score& score, const Attributes& attr)
     printf("Character has advanced one level up from level %hhu", level);
     score.RecalculateMaxes(++level, attr.constitution, attr.willpower);
     abilityPoints += apPerLevel;
+}
+
+std::string Progress::PrettyPrint() const
+{
+    uint32_t tnl = level == Progress::maxLevel ? 0 : levelThresholds[level] - experience;
+    std::string output("[");
+    output.append(std::to_string(level));
+    output.append("/");
+    output.append(std::to_string(Progress::maxLevel));
+    output.append(" Lvl, ");
+    output.append(std::to_string(tnl));
+    output.append(" ExpToNextLvl, ");
+    output.append(std::to_string(usedPoints));
+    output.append("/");
+    output.append(std::to_string(abilityPoints));
+    output.append(" Used/AbilityPts]");
+    return output;
 }

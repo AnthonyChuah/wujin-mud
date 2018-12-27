@@ -163,6 +163,21 @@ void Character::DoAdmin(const std::vector<std::string>& tokens)
             }
         _output->append("]\n");
     }
+    else if (tokens[0] == "stats")
+    {
+        _output->append("Your Stats are:\n");
+        _output->append("Attributes: ");
+        _output->append(_attr.PrettyPrint());
+        _output->append("\nProgress: ");
+        _output->append(_progress.PrettyPrint());
+        _output->append("\n");
+    }
+    else if (tokens[0] == "sc" || tokens[0] == "score")
+    {
+        _output->append("Your Score and Status Effects are:\n");
+        _output->append(_score.PrettyPrint());
+        _output->append("\n");
+    }
 }
 
 void Character::DoMove(const std::vector<std::string>& tokens)
@@ -313,11 +328,11 @@ void Character::Buy(const std::vector<std::string>& tokens)
     {
         if (tokens.size() == 2)
         {
-            _output->append("Please indicate the quantity of supplies to buy: e.g. 'buy supplies 42'.");
+            _output->append("Please indicate the quantity of supplies to buy: e.g. 'buy supplies 42'.\n");
             return;
         }
         uint16_t suppliesQty = std::stoi(tokens[2]);
-        printf("Character is trying to buy %u supplies", suppliesQty);
+        printf("Character is trying to buy %u supplies\n", suppliesQty);
         Trade::BuySupplies(*this, suppliesQty);
     }
 
@@ -325,11 +340,11 @@ void Character::Buy(const std::vector<std::string>& tokens)
     {
         if (tokens.size() == 2 || !HasOnlyDigits(tokens[2]))
         {
-            _output->append("Please indicate the quantity of ammo to buy: e.g. 'buy ammo 42'.");
+            _output->append("Please indicate the quantity of ammo to buy: e.g. 'buy ammo 42'.\n");
             return;
         }
         uint16_t ammoQty = std::stoi(tokens[2]);
-        printf("Character is trying to buy %u ammo", ammoQty);
+        printf("Character is trying to buy %u ammo\n", ammoQty);
         Trade::BuyAmmo(*this, ammoQty);
     }
 
@@ -406,5 +421,5 @@ void Character::ConsumeSupplies()
     else
         _items.supplies -= toConsume;
 
-    printf("Character consumed supplies, %u left", _items.supplies);
+    printf("Character consumed supplies, %u left\n", _items.supplies);
 }
