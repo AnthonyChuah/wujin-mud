@@ -11,6 +11,8 @@ struct Attributes
     uint8_t intelligence;
     uint8_t willpower;
     uint8_t perception;
+
+    std::string PrettyPrint() const;
 };
 
 constexpr uint8_t ATTR_SUM = 42;

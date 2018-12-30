@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <string>
 
 struct Attributes;
 struct Score;
@@ -16,13 +17,16 @@ struct Progress
     uint16_t usedPoints = 0;
     uint8_t level = 3;
 
+    // xxx add learned abilities: std::vector<AbilityName> abilities;
+
     void DeathExpLoss()
     {
-        printf("Experience lost due to death, 10 percent taken from %u", experience);
+        printf("Experience lost due to death, 10 percent taken from %u\n", experience);
         experience = (experience * 9) / 10;
     }
     bool GainExperience(uint32_t gain, Score& score, const Attributes& attr);
     void GainLevel(Score& score, const Attributes& attr);
+    std::string PrettyPrint() const;
 };
 
 inline uint8_t CalculateBaseMoveSpeed(Progress progress)
