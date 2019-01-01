@@ -165,18 +165,29 @@ void Character::DoAdmin(const std::vector<std::string>& tokens)
     }
     else if (tokens[0] == "stats")
     {
-        _output->append("Your Stats are:\n");
-        _output->append("Attributes: ");
+        _output->append("Your attributes: ");
         _output->append(_attr.PrettyPrint());
-        _output->append("\nProgress: ");
+        _output->append("\nYour progress: ");
         _output->append(_progress.PrettyPrint());
         _output->append("\n");
     }
     else if (tokens[0] == "sc" || tokens[0] == "score")
     {
-        _output->append("Your Score and Status Effects are:\n");
+        _output->append("Your score and status effects:\n");
         _output->append(_score.PrettyPrint());
         _output->append("\n");
+    }
+    else if (tokens[0] == "i" || tokens[0] == "items")
+    {
+        _output->append("Your loot:\n");
+        _output->append(_loot.PrettyPrint());
+        _output->append("Your items:\n");
+        _output->append(_items.PrettyPrint());
+    }
+    else if (tokens[0] == "eq" || tokens[0] == "equipment")
+    {
+        _output->append("Your equipment:\n");
+        _output->append(_equipment.PrettyPrint());
     }
 }
 

@@ -3,9 +3,15 @@
 #include <cassert>
 #include <cstdio>
 
+namespace
+{
+
+constexpr uint32_t valuePerUnit[5] = {5, 10, 20, 40, 100};
+
+}
+
 uint32_t Loot::GetTotalLootValue() const
 {
-    constexpr uint32_t valuePerUnit[5] = {5, 10, 20, 40, 100};
     uint32_t sum = 0;
     for (unsigned i = 0; i < 5; ++i)
         sum += loot[i] * valuePerUnit[i];
@@ -75,4 +81,39 @@ uint32_t Loot::UpgradeLootCapacityCost()
         break;
     }
     return 0;
+}
+
+std::string Loot::PrettyPrint() const
+{
+    std::string output;
+    for (size_t i = 0; i < totalTiers; ++i)
+    {
+        uint32_t value = valuePerUnit[i];
+        output.append("    [Tier ");
+        output.append(std::to_string(i));
+        output.append(", per-unit value ");
+        output.append(std::to_string(value));
+        output.append("] Quantity: ");
+        output.append(std::to_string(loot[i]));
+        output.append("\n");
+    }
+    return output;
+}
+
+std::string Items::PrettyPrint() const
+{
+    std::string output("    Supplies: ");
+    output.append(std::to_string(supplies));
+    output.append("/");
+    output.append(std::to_string(maxsupplies));
+    output.append("\n    Ammo: ");
+    output.append(std::to_string(ammo));
+    output.append("/");
+    output.append(std::to_string(maxammo));
+    output.append("\n    Money: ");
+    output.append(std::to_string(money));
+    output.append("\n    Bank balance: ");
+    output.append(std::to_string(banked));
+    output.append("\n");
+    return output;
 }

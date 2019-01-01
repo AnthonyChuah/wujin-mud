@@ -8,7 +8,8 @@ const std::vector<std::string> admin = {
     "stats",
     "i", "items",
     "l", "look",
-    "ex", "exits"
+    "ex", "exits",
+    "eq", "equipment"
 };
 
 const std::vector<std::string> movement = {
