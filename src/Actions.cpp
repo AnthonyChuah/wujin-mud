@@ -31,7 +31,9 @@ const std::vector<std::string> action = {
     "st", "stand",
     "buy",
     "sell",
-    "creep"
+    "creep",
+    "implements",
+    "weaponstyle"
 };
 
 const std::vector<std::string> skill = {

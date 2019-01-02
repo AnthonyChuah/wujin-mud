@@ -58,6 +58,8 @@ private:
     void DoCombatSpell(const std::vector<std::string>& tokens);
     void Buy(const std::vector<std::string>& tokens);
     void SetImplements(const std::vector<std::string>& tokens);
+    void ChangeWeaponStyle(const std::vector<std::string>& tokens);
+    void Repair(const std::vector<std::string>& tokens);
 
     void ToggleCreep();
     void SetRest(bool resting);

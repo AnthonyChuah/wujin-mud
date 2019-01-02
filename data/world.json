@@ -2,7 +2,7 @@
     "196 48":
     {
         "name": "Fort Victory",
-        "description": "Fort Victory stands proudly here, a tall stone tower surrounded by a wooden palisade.\nIt overlooks the scene of a recent victory against the alien predators.\nPeople of all races congregate here, whether seeking refuge or glory.\nHere, you may replenish your supplies, buy weapons, and rest until your next venture.\nTo the north, a barren road leads to the Victory Forward Camp, where new heroes do battle\nagainst the fledgling Goblin stronghold built by the remains of the defeated Goblins.\nTo the south, a well-patrolled road leads to the bustling Redoubt City.\n",
+        "description": "Fort Victory stands proudly here, a tall stone tower surrounded by a wooden palisade.\nIt overlooks the scene of a recent victory against the alien Predators.\nPeople of all races congregate here, whether seeking refuge or glory.\nHere, you may replenish your supplies, buy weapons, and rest until your next venture.\nTo the north, a barren road leads to the Victory Forward Camp, where new heroes do battle\nagainst the fledgling Goblin stronghold built by the remains of the defeated Goblins.\nTo the south, a well-patrolled road leads to the bustling Redoubt City.\n",
         "zonetype": "F",
         "terrain": "C"
     },
@@ -15,9 +15,51 @@
     },
     "196 46":
     {
+        "name": "Victory Road",
+        "description": "This barren road is littered with the remnants of the defeated Goblin army.\nGoblin stragglers roam about in a daze, easy pickings for even the most inexperienced heroes.\n",
+        "zonetype": "R",
+        "terrain": "R"
+    },
+    "196 45":
+    {
         "name": "Victory Forward Camp",
-        "description": "Placeholder description",
+        "description": "Victory Forward Camp is a bustling encampment full of bright-eyed new heroes,\nready to begin their quest to rid the world of the evil Predators.\nYou can buy supplies and ammunition here, but not much else.\nIf you wish to sell your loot, you should go south to Fort Victory.\n",
         "zonetype": "E",
+        "terrain": "E"
+    },
+    "195 44":
+    {
+        "name": "Victory Plains",
+        "description": "This is the site of a great victory over the Goblin Army.\nUnfortunately, the Goblins have regrouped and are starting to re-establish a foothold in this area.\nNew heroes are pouring forth from Fort Victory and the Victory Forward Camp to the south,\nto put an end to this Goblin menace.\n",
+        "zonetype": "W",
+        "terrain": "P"
+    },
+    "196 44":
+    {
+        "name": "Victory Tundra",
+        "description": "This is the site of a great victory over the Goblin Army.\nUnfortunately, the Goblins have regrouped and are starting to re-establish a foothold in this area.\nNew heroes are pouring forth from Fort Victory and the Victory Forward Camp to the south,\nto put an end to this Goblin menace.\n",
+        "zonetype": "W",
+        "terrain": "T"
+    },
+    "197 44":
+    {
+        "name": "Victory Forest",
+        "description": "This is the site of a great victory over the Goblin Army.\nUnfortunately, the Goblins have regrouped and are starting to re-establish a foothold in this area.\nNew heroes are pouring forth from Fort Victory and the Victory Forward Camp to the south,\nto put an end to this Goblin menace.\n",
+        "zonetype": "W",
+        "terrain": "F"
+    },
+    "196 43":
+    {
+        "name": "Goblin Path",
+        "description": "This is a crude path, created by the trampling of many Goblins.\nTheir tracks appear to come from and go to the north.\n",
+        "zonetype": "W",
+        "terrain": "P"
+    },
+    "196 42":
+    {
+        "name": "Goblin Stronghold",
+        "description": "At last, you have discovered the source of the evil Goblin infestation.\nA crude wooden-walled bailey, the Goblin Stronghold is home to a fledgling force of Goblins,\nwho are plotting to retake the north. There must be a chieftain here leading the Goblin forces.\nYou should slay this chieftain: if not for advancing the war effort,\nyou should do it for the shiny loot the chieftain is bound to carry.\n",
+        "zonetype": "S",
         "terrain": "E"
     }
 }

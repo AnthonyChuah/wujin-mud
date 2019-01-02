@@ -102,6 +102,11 @@ struct Equipment
 
     // xxx players can switch weapon styles in camps
     uint32_t SwitchWeaponStyle(WeaponStyle style); // return sale price of obsolete weapons
+    // The Buy functions return the money that you need to buy the item, if you cannot afford it
+    uint32_t BuyWeapon(uint32_t& money, char slot, WeaponType type, uint8_t tier);
+    bool ValidateWeaponTypeAndSlot(char slot, WeaponType type) const;
+    uint32_t BuyArmour(uint32_t& money, ArmourType type, uint8_t tier);
+    uint32_t BuyRanged(uint32_t& money, RangedType type, uint8_t tier);
 
     static uint32_t Valuation(uint8_t tier, char slot); // for weapons
     static uint32_t Valuation(uint8_t tier, RangedType type); // ranged weapons
