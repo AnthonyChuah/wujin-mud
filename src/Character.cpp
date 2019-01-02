@@ -322,6 +322,10 @@ void Character::DoActivity(const std::vector<std::string>& tokens)
         Buy(tokens);
     else if (tokens[0] == "implements")
         SetImplements(tokens);
+    else if (tokens[0] == "weaponstyle")
+        ChangeWeaponStyle(tokens);
+    else if (tokens[0] == "repair")
+        Repair(tokens);
     // xxx implement other standard activities
 }
 
@@ -331,7 +335,10 @@ void Character::Buy(const std::vector<std::string>& tokens)
     // "buy armour mail 2", "buy ammo 42"
     if (tokens.size() == 1)
     {
-        _output->append("You need to buy something! e.g. 'buy supplies 42'.\n");
+        _output->append("You need to buy something! e.g. 'buy supplies 42', 'buy ammo 37'.\n");
+        _output->append("Examples for armour: 'buy armour fullplate 1', 'buy armour mail 2'.\n");
+        _output->append("Examples for weapons: 'buy twohand spear 3', 'buy mainhand sword 2', 'buy offhand shield 1'.\n");
+        _output->append("Examples for ranged weapons: 'buy ranged crossbow 2', 'buy ranged shocklance 1'.\n");
         return;
     }
 
@@ -346,8 +353,7 @@ void Character::Buy(const std::vector<std::string>& tokens)
         printf("Character is trying to buy %u supplies\n", suppliesQty);
         Trade::BuySupplies(*this, suppliesQty);
     }
-
-    if (tokens[1] == "ammo")
+    else if (tokens[1] == "ammo")
     {
         if (tokens.size() == 2 || !HasOnlyDigits(tokens[2]))
         {
@@ -358,11 +364,159 @@ void Character::Buy(const std::vector<std::string>& tokens)
         printf("Character is trying to buy %u ammo\n", ammoQty);
         Trade::BuyAmmo(*this, ammoQty);
     }
+    else if (tokens[1] == "armour")
+    {
+        if (tokens.size() == 4 && HasOnlyDigits(tokens[3]) && _equipment.armourTier == 0)
+        {
+            uint8_t tier = Clamp(std::stoi(tokens[3]), 5, 0);
+            uint32_t missing;
+            if (tokens[2] == "padded")
+                missing = _equipment.BuyArmour(_items.money, ArmourType::PADDED, tier);
+            else if (tokens[2] == "mail")
+                missing = _equipment.BuyArmour(_items.money, ArmourType::MAIL, tier);
+            else if (tokens[2] == "plate")
+                missing = _equipment.BuyArmour(_items.money, ArmourType::PLATE, tier);
+            else if (tokens[2] == "fullplate")
+                missing = _equipment.BuyArmour(_items.money, ArmourType::FULLPLATE, tier);
+            else
+            {
+                _output->append("Invalid: the only types of armour are: padded, mail, plate, fullplate.\n");
+                return;
+            }
 
-    // xxx implement other purchases
+            if (missing == 0)
+                _output->append("You complete the transaction and have a shiny new set of armour!\n");
+            else
+            {
+                _output->append("You could not afford to buy this armour! It costs ");
+                _output->append(std::to_string(missing));
+                _output->append(".\n");
+            }
+            return;
+        }
+        _output->append("To buy armour, use 'buy armour [type] [tier]', e.g. 'buy armour fullplate 2'.\n");
+        _output->append("If you have existing armour that is better than tier 0, you must sell it first.\n");
+        return;
+    }
+    else if (tokens[1] == "ranged")
+    {
+        if (tokens.size() == 4 && HasOnlyDigits(tokens[3]) && _equipment.rangedTier == 0)
+        {
+            uint8_t tier = Clamp(std::stoi(tokens[3]), 5, 0);
+            uint32_t missing;
+            if (tokens[2] == "bow")
+                missing = _equipment.BuyRanged(_items.money, RangedType::BOW, tier);
+            else if (tokens[2] == "crossbow")
+                missing = _equipment.BuyRanged(_items.money, RangedType::CROSSBOW, tier);
+            else if (tokens[2] == "shocklance")
+                missing = _equipment.BuyRanged(_items.money, RangedType::SHOCKLANCE, tier);
+            else
+            {
+                _output->append("Invalid: the only types of ranged weapons are: bow, crossbow, shocklance.\n");
+                return;
+            }
+
+            if (missing == 0)
+                _output->append("You complete the transaction and have a spanking new ranged weapon!\n");
+            else
+            {
+                _output->append("You could not afford to buy this ranged weapon! It costs ");
+                _output->append(std::to_string(missing));
+                _output->append(".\n");
+            }
+            return;
+        }
+        _output->append("To buy ranged weapons, use 'buy ranged [type] [tier]', e.g. 'buy ranged bow 1'.\n");
+        _output->append("If you have an existing ranged weapon better than tier 0, you must sell it first.\n");
+        return;
+    }
+    else if (tokens[1] == "twohand" || tokens[1] == "mainhand" || tokens[1] == "offhand")
+    {
+        char slot = tokens[1] == "twohand" ? 'T' : tokens[1] == "mainhand" ? 'M' : 'O';
+        uint8_t currentTier;
+        if (slot == 'T')
+            currentTier = _equipment.weaponSet.twohandTier;
+        else if (slot == 'M')
+            currentTier = _equipment.weaponSet.mainhandTier;
+        else
+            currentTier = _equipment.weaponSet.offhandTier;
+
+        if (tokens.size() == 4 && HasOnlyDigits(tokens[3]) && currentTier == 0)
+        {
+            uint8_t tier = Clamp(std::stoi(tokens[3]), 5, 0);
+            uint32_t missing;
+            WeaponType type;
+            if (tokens[2] == "sword")
+                type = WeaponType::SWORD;
+            else if (tokens[2] == "axe")
+                type = WeaponType::AXE;
+            else if (tokens[2] == "mace")
+                type = WeaponType::MACE;
+            else if (tokens[2] == "spear")
+                type = WeaponType::SPEAR;
+            else if (tokens[2] == "shield")
+                type = WeaponType::SHIELD;
+            else
+            {
+                _output->append("Invalid: the only types of weapons are: sword, axe, mace, spear, shield.\n");
+                return;
+            }
+
+            if (_equipment.ValidateWeaponTypeAndSlot(slot, type))
+            {
+                missing = _equipment.BuyWeapon(_items.money, slot, type, tier);
+                if (missing == 0)
+                    _output->append("You complete the transaction and have a glorious new weapon!\n");
+                else
+                {
+                    _output->append("You could not afford to buy this weapon! It costs ");
+                    _output->append(std::to_string(missing));
+                    _output->append(".\n");
+                }
+            }
+            else
+            {
+                _output->append("Invalid: your weapon style plus choice is not a valid combination.\n");
+                _output->append("Examples: no such thing as mainhand or twohand shields, or non-twohand spears.\n");
+                _output->append("Or perhaps you tried to buy a twohand weapon, when your style is not twohand.\n");
+            }
+            return;
+        }
+        _output->append("To buy weapons, use 'buy [hand] [type] [tier]', e.g. 'buy twohand axe 3', 'buy offhand shield 2'.\n");
+        _output->append("You can only buy two-hand weapons if your Weapon Style is two-hand.\n");
+        return;
+    }
+    else
+    {
+        _output->append("You cannot buy '");
+        _output->append(tokens[1]);
+        _output->append("'.\n");
+    }
 }
 
 void Character::SetImplements(const std::vector<std::string>& tokens)
+{
+    if (tokens.size() == 2 && HasOnlyDigits(tokens[1]))
+    {
+        uint8_t implements = std::stoi(tokens[1]);
+        if (implements <= 20)
+        {
+            _equipment.implements = std::stoi(tokens[1]);
+            _output->append("You have adjusted the weight of your equipped implements to ");
+            _output->append(tokens[1]);
+            _output->append(".\nThis weight encumbers you, but enables more mechanics and thaumaturgic magic.\n");
+        }
+        else
+            _output->append("Invalid: the maximum-possible implements weight is only 20 units.\n");
+    }
+}
+
+void Character::ChangeWeaponStyle(const std::vector<std::string>& tokens)
+{
+    (void) tokens;
+}
+
+void Character::Repair(const std::vector<std::string>& tokens)
 {
     (void) tokens;
 }

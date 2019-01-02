@@ -263,6 +263,95 @@ uint32_t Equipment::SwitchWeaponStyle(WeaponStyle style)
     return 0;
 }
 
+uint32_t Equipment::BuyWeapon(uint32_t& money, char slot, WeaponType type, uint8_t tier)
+{
+    // When this is called, we should already have validated that style matches
+    uint32_t cost = Valuation(tier, slot);
+    printf("Equipment::BuyWeapon slot %c type %c tier %u, money %u cost %u\n",
+           slot, CastToUnderlying(type), tier, money, cost);
+    if (money < cost)
+        return cost; // do nothing, fail to buy because cannot afford
+
+    money -= cost;
+    switch (slot)
+    {
+    case 'T':
+        weaponSet.twohand = type;
+        weaponSet.twohandTier = tier;
+        weaponSet.twohandDurability = maxDurability;
+        break;
+    case 'M':
+        weaponSet.mainhand = type;
+        weaponSet.mainhandTier = tier;
+        weaponSet.mainhandDurability = maxDurability;
+        break;
+    case 'O':
+        weaponSet.offhand = type;
+        weaponSet.offhandTier = tier;
+        weaponSet.offhandDurability = maxDurability;
+        break;
+    default:
+        break; // Impossible
+    }
+    return 0;
+}
+
+bool Equipment::ValidateWeaponTypeAndSlot(char slot, WeaponType type) const
+{
+    // No such thing as one-hand spears, or shields anywhere but in off-hand
+    if (type == WeaponType::SPEAR && slot != 'T') return false;
+    if (type == WeaponType::SHIELD && slot != 'O') return false;
+
+    if (weaponSet.style == WeaponStyle::TWOHAND)
+    {
+        if (slot != 'T' || type == WeaponType::SHIELD)
+            return false; // twohand style must use twohand slot 'T', and cannot use shield
+    }
+    else if (weaponSet.style == WeaponStyle::SHIELD)
+    {
+        if (slot == 'T') return false; // shield style cannot use twohand slot
+        if (slot == 'O' && type != WeaponType::SHIELD)
+            return false; // shield style must only use shield in off-hand
+    }
+    else if (weaponSet.style == WeaponStyle::TWOWEAPON)
+    {
+        if (slot == 'T') return false; // twoweapon style cannot use twohand slot
+        if (type == WeaponType::SHIELD) return false; // twoweapon style cannot use shields
+    }
+
+    return true;
+}
+
+uint32_t Equipment::BuyArmour(uint32_t& money, ArmourType type, uint8_t tier)
+{
+    uint32_t cost = Valuation(tier, type);
+    printf("Equipment::BuyArmour type %c tier %u, money %u cost %u\n",
+           CastToUnderlying(type), tier, money, cost);
+    if (money < cost)
+        return cost;
+
+    money -= cost;
+    armourType = type;
+    armourTier = tier;
+    armourDurability = maxDurability;
+    return 0;
+}
+
+uint32_t Equipment::BuyRanged(uint32_t& money, RangedType type, uint8_t tier)
+{
+    uint32_t cost = Valuation(tier, type);
+    printf("Equipment::BuyRanged type %c tier %u, money %u cost %u\n",
+           CastToUnderlying(type), tier, money, cost);
+    if (money < cost)
+        return cost;
+
+    money -= cost;
+    rangedType = type;
+    rangedTier = tier;
+    rangedDurability = maxDurability;
+    return 0;
+}
+
 uint32_t Equipment::Valuation(uint8_t tier, char slot)
 {
     if (slot == 'T')
@@ -328,7 +417,7 @@ void PrettyPrintEnum(std::string& output, RangedType type)
         output.append("shocklance");
         break;
     case RangedType::NONE:
-        output.append("no ranged weapon");
+        output.append("none");
         break;
     }
 }
